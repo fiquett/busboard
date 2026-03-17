@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>49 Bus — Foyer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0a0c10;
+    --card:    #111318;
+    --border:  #1e2230;
+    --text:    #e8eaf0;
+    --dim:     #5a6080;
+    --north:   #4ade80;
+    --south:   #60a5fa;
+    --live:    #4ade80;
+    --sched:   #f59e0b;
+    --soon:    #ef4444;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px 20px;
+    gap: 20px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .route-badge {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .clock {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: .04em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    flex: 1;
+  }
+
+  /* ── Direction card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 18px 18px 0 0;
+  }
+  .card.north::before { background: var(--north); }
+  .card.south::before { background: var(--south); }
+
+  .dir-label {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .card.north .dir-label { color: var(--north); }
+  .card.south .dir-label { color: var(--south); }
+
+  .dir-headsign {
+    font-size: .78rem;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+
+  /* ── Next bus (big) ── */
+  .next-bus {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .next-mins {
+    font-size: 4.8rem;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.03em;
+  }
+  .next-mins.run    { color: var(--soon); }
+  .next-mins.hustle { color: var(--sched); }
+  .next-unit.run    { color: var(--soon); }
+  .next-unit.hustle { color: var(--sched); }
+  .card.north .next-mins:not(.run):not(.hustle) { color: var(--north); }
+  .card.south .next-mins:not(.run):not(.hustle) { color: var(--south); }
+
+  .next-unit {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--dim);
+    padding-bottom: 6px;
+  }
+
+  .live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 6px var(--live);
+    animation: pulse 2s ease-in-out infinite;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .live-dot.sched {
+    background: var(--sched);
+    box-shadow: 0 0 6px var(--sched);
+    animation: none;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .35; }
+  }
+
+  /* ── Upcoming ── */
+  .upcoming {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .upcoming-label {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 2px;
+  }
+  .upcoming-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .up-mins {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    min-width: 52px;
+  }
+  .up-time {
+    font-size: .78rem;
+    color: var(--dim);
+  }
+
+  /* ── Weather strip ── */
+  .weather-strip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+  .wx-icon  { font-size: 1.6rem; line-height: 1; }
+  .wx-temp  { font-size: 1.5rem; font-weight: 900; letter-spacing: -.02em; }
+  .wx-feels { font-size: .75rem; color: var(--dim); margin-top: 1px; }
+  .wx-desc  { font-size: .8rem; color: var(--text); }
+  .wx-wind  { font-size: .72rem; color: var(--dim); margin-top: 2px; }
+  .wx-jacket {
+    margin-left: auto;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+  }
+  .wx-jacket.yes  { background: #1e3a5f; color: #60a5fa; border: 1px solid #60a5fa44; }
+  .wx-jacket.maybe{ background: #2d2a10; color: #f59e0b; border: 1px solid #f59e0b44; }
+  .wx-jacket.no   { background: #0f2d1a; color: #4ade80; border: 1px solid #4ade8044; }
+
+  /* ── Map ── */
+  .map-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    height: 180px;
+    position: relative;
+  }
+  #map { height: 100%; width: 100%; background: #0e1117; }
+
+  /* Dark tile filter */
+  .leaflet-tile { filter: brightness(.55) saturate(.6) hue-rotate(190deg); }
+  .leaflet-container { background: #0e1117; }
+
+  /* Custom marker labels */
+  .map-label {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .ml-home {
+    background: #fff;
+    color: #0a0c10;
+    font-size: .62rem;
+    font-weight: 800;
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px #000a;
+  }
+  .ml-north {
+    background: var(--north,#4ade80);
+    color: #0a0c10;
+    font-size: .62rem;
+    font-weight: 800;
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px #000a;
+  }
+  .ml-south {
+    background: var(--south,#60a5fa);
+    color: #0a0c10;
+    font-size: .62rem;
+    font-weight: 800;
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px #000a;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 4px;
+  }
+  .footer-left {
+    font-size: .68rem;
+    color: var(--dim);
+    letter-spacing: .04em;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--live);
+    display: inline-block;
+    margin-right: 5px;
+  }
+  .status-dot.error { background: var(--soon); }
+  .last-updated {
+    font-size: .68rem;
+    color: var(--dim);
+  }
+
+  /* ── Error state ── */
+  .error-msg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    font-size: 1rem;
+    color: var(--dim);
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* ── Loading shimmer ── */
+  .shimmer {
+    background: linear-gradient(90deg, var(--border) 25%, #252a3a 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 8px;
+    height: 1em;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="route-badge">🚌 Route 49</div>
+  <div class="clock" id="clock">—</div>
+</div>
+
+<div class="weather-strip" id="weatherStrip">
+  <div class="wx-icon" id="wxIcon">…</div>
+  <div>
+    <div class="wx-temp" id="wxTemp">—</div>
+    <div class="wx-feels" id="wxFeels">feels like —</div>
+  </div>
+  <div>
+    <div class="wx-desc" id="wxDesc">—</div>
+    <div class="wx-wind" id="wxWind">—</div>
+  </div>
+  <div class="wx-jacket" id="wxJacket">…</div>
+</div>
+
+<div class="grid">
+  <div class="card north" id="cardNorth">
+    <div>
+      <div class="dir-label">↑ Northbound</div>
+      <div class="dir-headsign">U-District Station</div>
+    </div>
+    <div class="error-msg"><div class="shimmer" style="width:80px;height:4rem"></div></div>
+  </div>
+  <div class="card south" id="cardSouth">
+    <div>
+      <div class="dir-label">↓ Southbound</div>
+      <div class="dir-headsign">Downtown Broadway</div>
+    </div>
+    <div class="error-msg"><div class="shimmer" style="width:80px;height:4rem"></div></div>
+  </div>
+</div>
+
+<div class="map-wrap">
+  <div id="map"></div>
+</div>
+
+<div class="footer">
+  <div class="footer-left">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Loading…</span>
+  </div>
+  <div class="last-updated" id="lastUpdated"></div>
+</div>
+
+<script>
+const STOPS = {
+  north: { id: '1_11230', el: 'cardNorth', color: 'north' },
+  south: { id: '1_11010', el: 'cardSouth', color: 'south' },
+};
+const API_KEY  = 'TEST';
+const BASE_URL = 'https://api.pugetsound.onebusaway.org/api/where';
+const ROUTE    = '49';
+const REFRESH_MS = 30_000;
+
+// ── Clock ────────────────────────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  document.getElementById('clock').textContent =
+    `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// ── Fetch ────────────────────────────────────────────────────────────────────
+async function fetchStop(stopId) {
+  const url = `${BASE_URL}/arrivals-and-departures-for-stop/${stopId}.json`
+            + `?key=${API_KEY}&minutesBefore=0&minutesAfter=90`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const d = await r.json();
+  const now = d.currentTime;
+  const arrivals = (d.data.entry.arrivalsAndDepartures || [])
+    .filter(e => e.routeShortName === ROUTE)
+    .map(e => {
+      const predT = e.predicted && e.predictedDepartureTime ? e.predictedDepartureTime : 0;
+      const t = predT || e.scheduledDepartureTime;
+      return {
+        mins:    Math.round((t - now) / 60000),
+        time:    new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),
+        live:    !!(predT),
+        headsign: e.tripHeadsign,
+      };
+    })
+    .filter(e => e.mins >= 0);
+  return arrivals;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderCard(elId, colorClass, arrivals) {
+  const card = document.getElementById(elId);
+
+  if (!arrivals || !arrivals.length) {
+    // Keep header, show no service
+    card.innerHTML = `
+      <div>
+        <div class="dir-label">${colorClass === 'north' ? '↑ Northbound' : '↓ Southbound'}</div>
+        <div class="dir-headsign">${colorClass === 'north' ? 'U-District Station' : 'Downtown Broadway'}</div>
+      </div>
+      <div class="error-msg" style="color:var(--dim)">No buses in next 90 min</div>
+    `;
+    return;
+  }
+
+  const next = arrivals[0];
+  const minsText = next.mins <= 0 ? 'Now' : String(next.mins);
+  const isArriving = next.mins <= 0;
+  const urgency = next.mins <= 1 ? 'run' : next.mins <= 2 ? 'hustle' : '';
+
+  const upcomingRows = arrivals.slice(1, 4).map(a => `
+    <div class="upcoming-row">
+      <div class="up-mins">${a.mins < 2 ? 'Now' : a.mins + ' min'}</div>
+      <div class="up-time">${a.time}${a.live ? '' : ' ·sched'}</div>
+    </div>
+  `).join('');
+
+  card.innerHTML = `
+    <div>
+      <div class="dir-label">${colorClass === 'north' ? '↑ Northbound' : '↓ Southbound'}</div>
+      <div class="dir-headsign">${next.headsign || (colorClass === 'north' ? 'U-District Station' : 'Downtown Broadway')}</div>
+    </div>
+    <div class="next-bus">
+      <div class="next-mins ${urgency}">${minsText}</div>
+      ${minsText !== 'Now' ? `<div class="next-unit ${urgency}">${urgency === 'run' ? '🏃' : urgency === 'hustle' ? '🚶' : 'min'}</div>` : ''}
+      <span class="live-dot ${next.live ? '' : 'sched'}" title="${next.live ? 'Live GPS' : 'Scheduled'}"></span>
+    </div>
+    ${upcomingRows ? `
+    <div class="upcoming">
+      <div class="upcoming-label">Then</div>
+      ${upcomingRows}
+    </div>` : ''}
+  `;
+}
+
+// ── Refresh ───────────────────────────────────────────────────────────────────
+let hasError = false;
+
+async function refresh() {
+  try {
+    const [north, south] = await Promise.all([
+      fetchStop(STOPS.north.id),
+      fetchStop(STOPS.south.id),
+    ]);
+    renderCard('cardNorth', 'north', north);
+    renderCard('cardSouth', 'south', south);
+    hasError = false;
+    document.getElementById('statusDot').className   = 'status-dot';
+    document.getElementById('statusText').textContent = 'Live';
+    const t = new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+    document.getElementById('lastUpdated').textContent = `Updated ${t}`;
+  } catch (e) {
+    hasError = true;
+    document.getElementById('statusDot').className   = 'status-dot error';
+    document.getElementById('statusText').textContent = 'Offline — retrying…';
+    console.error('Bus fetch error:', e);
+  }
+}
+
+refresh();
+setInterval(refresh, REFRESH_MS);
+
+// ── Weather ───────────────────────────────────────────────────────────────────
+const WMO = {
+  0:  ['☀️',  'Clear'],
+  1:  ['🌤',  'Mostly clear'],
+  2:  ['⛅️', 'Partly cloudy'],
+  3:  ['☁️',  'Overcast'],
+  45: ['🌫',  'Foggy'],
+  48: ['🌫',  'Freezing fog'],
+  51: ['🌦',  'Light drizzle'],
+  53: ['🌧',  'Drizzle'],
+  55: ['🌧',  'Heavy drizzle'],
+  61: ['🌧',  'Light rain'],
+  63: ['🌧',  'Rain'],
+  65: ['🌧',  'Heavy rain'],
+  71: ['🌨',  'Light snow'],
+  73: ['❄️',  'Snow'],
+  75: ['❄️',  'Heavy snow'],
+  80: ['🌦',  'Rain showers'],
+  81: ['🌧',  'Showers'],
+  82: ['⛈',  'Heavy showers'],
+  95: ['⛈',  'Thunderstorm'],
+  99: ['⛈',  'Severe storm'],
+};
+
+async function fetchWeather() {
+  const url = 'https://api.open-meteo.com/v1/forecast'
+    + '?latitude=47.6296&longitude=-122.3206'
+    + '&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m'
+    + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch';
+  const r = await fetch(url);
+  const d = await r.json();
+  const c = d.current;
+
+  const [icon, desc] = WMO[c.weather_code] || ['🌡', 'Unknown'];
+  const temp   = Math.round(c.temperature_2m);
+  const feels  = Math.round(c.apparent_temperature);
+  const wind   = Math.round(c.wind_speed_10m);
+  const gusts  = Math.round(c.wind_gusts_10m);
+  const rain   = c.precipitation > 0;
+
+  document.getElementById('wxIcon').textContent  = icon;
+  document.getElementById('wxTemp').textContent  = `${temp}°F`;
+  document.getElementById('wxFeels').textContent = `feels like ${feels}°F`;
+  document.getElementById('wxDesc').textContent  = desc + (rain ? ' 🌂' : '');
+  document.getElementById('wxWind').textContent  = gusts > wind + 5
+    ? `💨 ${wind} mph, gusts ${gusts}`
+    : wind > 5 ? `💨 ${wind} mph` : 'Calm';
+
+  // Jacket logic
+  const jacket = document.getElementById('wxJacket');
+  if (feels < 45 || rain || gusts > 25) {
+    jacket.textContent = '🧥 Jacket';
+    jacket.className = 'wx-jacket yes';
+  } else if (feels < 58) {
+    jacket.textContent = '🤔 Maybe';
+    jacket.className = 'wx-jacket maybe';
+  } else {
+    jacket.textContent = '✓ No jacket';
+    jacket.className = 'wx-jacket no';
+  }
+}
+
+fetchWeather();
+setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+const HOME  = [47.6296311, -122.3203];    // 1131 10th Ave E — snapped to street lon
+const NORTH = [47.628861,  -122.320114];  // stop 11230 — NB, cross the street
+const SOUTH = [47.628822,  -122.32032];   // stop 11010 — SB, turn right
+
+const map = L.map('map', {
+  center: [47.6292, -122.3203],
+  zoom: 17,
+  zoomControl: false,
+  attributionControl: false,
+  dragging: false,
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  touchZoom: false,
+  keyboard: false,
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+}).addTo(map);
+
+function makeIcon(cls) {
+  return L.divIcon({ className: 'map-label', html: `<div class="${cls}"></div>`, iconAnchor: [0, 0] });
+}
+
+// Home marker
+L.marker(HOME, { icon: L.divIcon({
+  className: 'map-label',
+  html: '<div class="ml-home">🏠 You</div>',
+  iconAnchor: [18, 10],
+})}).addTo(map);
+
+// Northbound stop — cross the street
+L.marker(NORTH, { icon: L.divIcon({
+  className: 'map-label',
+  html: '<div class="ml-north">↑ N — cross street</div>',
+  iconAnchor: [60, 10],
+})}).addTo(map);
+
+// Southbound stop — just go right
+L.marker(SOUTH, { icon: L.divIcon({
+  className: 'map-label',
+  html: '<div class="ml-south">↓ S — turn right</div>',
+  iconAnchor: [60, 10],
+})}).addTo(map);
+
+// Walking line to southbound (simple, right turn)
+L.polyline([HOME, [HOME[0], SOUTH[1]], SOUTH], {
+  color: '#60a5fa', weight: 2.5, opacity: .6, dashArray: '5 5',
+}).addTo(map);
+</script>
+</body>
+</html>
