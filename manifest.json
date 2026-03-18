@@ -1,0 +1,18 @@
+{
+  "name": "49 Bus — Foyer",
+  "short_name": "49 Bus",
+  "description": "Live Route 49 ETAs for 10th Ave E & E Prospect St",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c10",
+  "theme_color": "#0a0c10",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

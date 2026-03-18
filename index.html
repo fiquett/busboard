@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>49 Bus — Foyer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>49 Bus</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0c10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="49 Bus">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -229,40 +234,37 @@
   .leaflet-container { background: #0e1117; }
 
   /* Custom marker labels */
-  .map-label {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
+  .map-label { background: none !important; border: none !important; box-shadow: none !important; }
+  .ml-pin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
-  .ml-home {
+  .ml-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,.4);
+    flex-shrink: 0;
+  }
+  .ml-tag {
+    font-size: .58rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px #000a;
+    color: #0a0c10;
+  }
+  .ml-home-tag {
     background: #fff;
-    color: #0a0c10;
     font-size: .62rem;
     font-weight: 800;
     padding: 3px 6px;
     border-radius: 6px;
     white-space: nowrap;
     box-shadow: 0 2px 8px #000a;
-  }
-  .ml-north {
-    background: var(--north,#4ade80);
     color: #0a0c10;
-    font-size: .62rem;
-    font-weight: 800;
-    padding: 3px 6px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px #000a;
-  }
-  .ml-south {
-    background: var(--south,#60a5fa);
-    color: #0a0c10;
-    font-size: .62rem;
-    font-weight: 800;
-    padding: 3px 6px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px #000a;
   }
 
   /* ── Footer ── */
@@ -550,7 +552,7 @@ const NORTH = [47.628861,  -122.320114];  // stop 11230 — NB, cross the street
 const SOUTH = [47.628822,  -122.32032];   // stop 11010 — SB, turn right
 
 const map = L.map('map', {
-  center: [47.6292, -122.3203],
+  center: [47.6292, -122.3202],
   zoom: 17,
   zoomControl: false,
   attributionControl: false,
@@ -565,29 +567,25 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(map);
 
-function makeIcon(cls) {
-  return L.divIcon({ className: 'map-label', html: `<div class="${cls}"></div>`, iconAnchor: [0, 0] });
-}
-
 // Home marker
 L.marker(HOME, { icon: L.divIcon({
   className: 'map-label',
-  html: '<div class="ml-home">🏠 You</div>',
-  iconAnchor: [18, 10],
+  html: '<div class="ml-pin"><div class="ml-dot" style="background:#fff"></div><div class="ml-home-tag">🏠 You</div></div>',
+  iconAnchor: [6, 6],
 })}).addTo(map);
 
-// Northbound stop — cross the street
+// Northbound stop — single marker, dot + label
 L.marker(NORTH, { icon: L.divIcon({
   className: 'map-label',
-  html: '<div class="ml-north">↑ N — cross street</div>',
-  iconAnchor: [60, 10],
+  html: '<div class="ml-pin"><div class="ml-dot" style="background:#4ade80"></div><div class="ml-tag" style="background:#4ade80">↑ NB</div></div>',
+  iconAnchor: [6, 6],
 })}).addTo(map);
 
-// Southbound stop — just go right
+// Southbound stop — single marker, dot + label
 L.marker(SOUTH, { icon: L.divIcon({
   className: 'map-label',
-  html: '<div class="ml-south">↓ S — turn right</div>',
-  iconAnchor: [60, 10],
+  html: '<div class="ml-pin"><div class="ml-dot" style="background:#60a5fa"></div><div class="ml-tag" style="background:#60a5fa">↓ SB</div></div>',
+  iconAnchor: [6, 6],
 })}).addTo(map);
 
 // Walking line to southbound (simple, right turn)
