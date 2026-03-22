@@ -384,23 +384,32 @@
     font-weight: 700;
     color: var(--text);
     min-width: 80px;
+    flex-shrink: 0;
+  }
+  .pup-timers {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
   }
   .pup-timer {
-    font-size: .85rem;
+    font-size: .78rem;
     font-weight: 700;
-    flex: 1;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .pup-timer.ok     { color: var(--north); }
   .pup-timer.warn   { color: var(--sched); }
   .pup-timer.urgent { color: var(--soon); }
+  .pup-timer.dim    { color: var(--dim); }
   .pup-btn {
     background: #1a1e28;
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
     font-size: 1.1rem;
-    padding: 8px 14px;
+    padding: 8px 12px;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -522,18 +531,24 @@
 </div>
 
 <div class="pup-strip">
-  <div class="pup-label">🐾 Pup tracker</div>
+  <div class="pup-label">Pup tracker</div>
   <div class="pup-row">
     <div class="pup-name">Samwise</div>
-    <div class="pup-timer" id="timerSamwise">—</div>
-    <button class="pup-btn" onclick="logPup('samwise','pee')">💧 Pee</button>
-    <button class="pup-btn" onclick="logPup('samwise','poop')">💩 Poop</button>
+    <div class="pup-timers">
+      <div class="pup-timer" id="peeTimerSamwise">—</div>
+      <div class="pup-timer" id="poopTimerSamwise">—</div>
+    </div>
+    <button class="pup-btn" onclick="logPup('samwise','pee')">Pee</button>
+    <button class="pup-btn" onclick="logPup('samwise','poop')">Poop</button>
   </div>
   <div class="pup-row">
     <div class="pup-name">Quentin</div>
-    <div class="pup-timer" id="timerQuentin">—</div>
-    <button class="pup-btn" onclick="logPup('quentin','pee')">💧 Pee</button>
-    <button class="pup-btn" onclick="logPup('quentin','poop')">💩 Poop</button>
+    <div class="pup-timers">
+      <div class="pup-timer" id="peeTimerQuentin">—</div>
+      <div class="pup-timer" id="poopTimerQuentin">—</div>
+    </div>
+    <button class="pup-btn" onclick="logPup('quentin','pee')">Pee</button>
+    <button class="pup-btn" onclick="logPup('quentin','poop')">Poop</button>
   </div>
 </div>
 
@@ -794,11 +809,16 @@ L.polyline([HOME, [HOME[0], SOUTH[1]], SOUTH], {
 }).addTo(map);
 
 // ── Pup tracker ───────────────────────────────────────────────────────────────
+// Tapping Poop also updates pee (dogs always pee when they poop)
+// Pee alert: warn 4h, urgent 6h
+// Poop alert: warn 12h, urgent 18h
+
 const DOGS = ['samwise', 'quentin'];
 
 function logPup(dog, type) {
-  localStorage.setItem(`pup_${dog}_last`, Date.now());
-  localStorage.setItem(`pup_${dog}_type`, type);
+  const now = Date.now();
+  localStorage.setItem(`pup_${dog}_pee`, now);  // always update pee
+  if (type === 'poop') localStorage.setItem(`pup_${dog}_poop`, now);
   renderPupTimers();
 }
 
@@ -806,22 +826,39 @@ function elapsedStr(ms) {
   const totalMins = Math.floor(ms / 60000);
   const h = Math.floor(totalMins / 60);
   const m = totalMins % 60;
-  if (h === 0) return `${m}m ago`;
-  return `${h}h ${m}m ago`;
+  return h === 0 ? `${m}m ago` : `${h}h ${m}m ago`;
+}
+
+function timerClass(hours, warnH, urgentH) {
+  return hours >= urgentH ? 'urgent' : hours >= warnH ? 'warn' : 'ok';
 }
 
 function renderPupTimers() {
   const now = Date.now();
   for (const dog of DOGS) {
-    const ts   = parseInt(localStorage.getItem(`pup_${dog}_last`) || '0');
-    const type = localStorage.getItem(`pup_${dog}_type`) || '';
-    const el   = document.getElementById(`timer${dog.charAt(0).toUpperCase() + dog.slice(1)}`);
-    if (!ts) { el.textContent = 'not logged'; el.className = 'pup-timer warn'; continue; }
-    const elapsed = now - ts;
-    const hours = elapsed / 3600000;
-    const icon  = type === 'poop' ? '💩' : '💧';
-    el.textContent = `${icon} ${elapsedStr(elapsed)}`;
-    el.className   = `pup-timer ${hours >= 6 ? 'urgent' : hours >= 3 ? 'warn' : 'ok'}`;
+    const cap  = dog.charAt(0).toUpperCase() + dog.slice(1);
+    const tsP  = parseInt(localStorage.getItem(`pup_${dog}_pee`)  || '0');
+    const tsD  = parseInt(localStorage.getItem(`pup_${dog}_poop`) || '0');
+    const peeEl  = document.getElementById(`peeTimerSamwise`.replace('Samwise', cap));
+    const poopEl = document.getElementById(`poopTimerSamwise`.replace('Samwise', cap));
+
+    if (!tsP) {
+      peeEl.textContent  = 'Pee: not logged';
+      peeEl.className    = 'pup-timer warn';
+    } else {
+      const h = (now - tsP) / 3600000;
+      peeEl.textContent = `Pee: ${elapsedStr(now - tsP)}`;
+      peeEl.className   = `pup-timer ${timerClass(h, 4, 6)}`;
+    }
+
+    if (!tsD) {
+      poopEl.textContent = 'Poop: not logged';
+      poopEl.className   = 'pup-timer dim';
+    } else {
+      const h = (now - tsD) / 3600000;
+      poopEl.textContent = `Poop: ${elapsedStr(now - tsD)}`;
+      poopEl.className   = `pup-timer ${timerClass(h, 12, 18)}`;
+    }
   }
 }
 
