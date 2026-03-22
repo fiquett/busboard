@@ -439,6 +439,10 @@
       <div class="wx-stat-label">Air quality</div>
       <div class="wx-stat-value" id="wxAqi">—</div>
     </div>
+    <div class="wx-stat">
+      <div class="wx-stat-label">Moon</div>
+      <div class="wx-stat-value" id="wxMoon">—</div>
+    </div>
   </div>
 </div>
 
@@ -509,6 +513,36 @@ function tickClock() {
 }
 setInterval(tickClock, 1000);
 tickClock();
+
+// ── Moon phase ────────────────────────────────────────────────────────────────
+function moonPhase() {
+  // Known new moon: Jan 6 2000 18:14 UTC
+  const known = new Date('2000-01-06T18:14:00Z');
+  const cycle = 29.53059;
+  const elapsed = (Date.now() - known.getTime()) / 86400000;
+  const phase = ((elapsed % cycle) + cycle) % cycle;
+  const phases = [
+    [0,   '🌑', 'New'],
+    [1.85,'🌒', 'Waxing Crescent'],
+    [5.53,'🌓', 'First Quarter'],
+    [9.22,'🌔', 'Waxing Gibbous'],
+    [12.9,'🌕', 'Full'],
+    [16.6,'🌖', 'Waning Gibbous'],
+    [20.3,'🌗', 'Last Quarter'],
+    [24.0,'🌘', 'Waning Crescent'],
+    [27.7,'🌑', 'New'],
+  ];
+  for (let i = phases.length - 1; i >= 0; i--) {
+    if (phase >= phases[i][0]) return { emoji: phases[i][1], name: phases[i][2] };
+  }
+  return { emoji: '🌑', name: 'New' };
+}
+
+function renderMoon() {
+  const { emoji, name } = moonPhase();
+  document.getElementById('wxMoon').textContent = `${emoji} ${name}`;
+}
+renderMoon();
 
 // ── Bus fetch ─────────────────────────────────────────────────────────────────
 async function fetchStop(stopId) {
