@@ -503,7 +503,7 @@ function tickClock() {
   const now = new Date();
   const h = now.getHours(), m = now.getMinutes();
   document.getElementById('clock').textContent =
-    `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h < 12 ? 'AM' : 'PM'}`;
+    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
   document.getElementById('date').textContent =
     `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
 }
@@ -525,7 +525,7 @@ async function fetchStop(stopId) {
       const t = predT || e.scheduledDepartureTime;
       return {
         mins:    Math.round((t - now) / 60000),
-        time:    new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),
+        time:    new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:false}),
         live:    !!(predT),
         headsign: e.tripHeadsign,
       };
@@ -575,7 +575,7 @@ async function refresh() {
     renderCard('cardSouth', 'south', south);
     document.getElementById('statusDot').className   = 'status-dot';
     document.getElementById('statusText').textContent = 'Live';
-    const t = new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+    const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
     document.getElementById('lastUpdated').textContent = `Updated ${t}`;
   } catch (e) {
     document.getElementById('statusDot').className   = 'status-dot error';
@@ -624,7 +624,7 @@ async function fetchWeather() {
   const lo     = Math.round(d.temperature_2m_min[0]);
   const rainPct = d.precipitation_probability_max[0];
   const sunsetRaw = d.sunset[0]; // e.g. "2026-03-21T19:42"
-  const sunsetTime = new Date(sunsetRaw).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const sunsetTime = new Date(sunsetRaw).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
   const aqiVal = Math.round(aqi.current.us_aqi);
 
   document.getElementById('wxIcon').textContent  = icon;
@@ -675,7 +675,7 @@ async function fetchCalendar() {
     document.getElementById('calEvents').innerHTML = events.map(e => {
       const start = e.start.dateTime ? new Date(e.start.dateTime) : null;
       const timeStr = start
-        ? start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})
+        ? start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false})
         : 'All day';
       return `<div class="cal-event">
         <div class="cal-time">${timeStr}</div>
