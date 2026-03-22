@@ -658,9 +658,13 @@ async function fetchCalendar() {
     const r = await fetch(url);
     const d = await r.json();
     const events = (d.items || []).filter(e => e.status !== 'cancelled');
-    if (!events.length) return;
-
-    document.getElementById('calStrip').classList.add('has-events');
+    const strip = document.getElementById('calStrip');
+    if (!events.length) {
+      strip.classList.remove('has-events');
+      document.getElementById('calEvents').innerHTML = '';
+      return;
+    }
+    strip.classList.add('has-events');
     document.getElementById('calEvents').innerHTML = events.map(e => {
       const start = e.start.dateTime ? new Date(e.start.dateTime) : null;
       const timeStr = start
