@@ -568,18 +568,25 @@ function renderCard(elId, colorClass, arrivals) {
     ${upcomingRows ? `<div class="upcoming"><div class="upcoming-label">Then</div>${upcomingRows}</div>` : ''}`;
 }
 
+let failCount = 0;
+const FAIL_THRESHOLD = 3;
+
 async function refresh() {
   try {
     const [north, south] = await Promise.all([fetchStop(STOPS.north.id), fetchStop(STOPS.south.id)]);
     renderCard('cardNorth', 'north', north);
     renderCard('cardSouth', 'south', south);
+    failCount = 0;
     document.getElementById('statusDot').className   = 'status-dot';
     document.getElementById('statusText').textContent = 'Live';
     const t = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
     document.getElementById('lastUpdated').textContent = `Updated ${t}`;
   } catch (e) {
-    document.getElementById('statusDot').className   = 'status-dot error';
-    document.getElementById('statusText').textContent = 'Offline — retrying…';
+    failCount++;
+    if (failCount >= FAIL_THRESHOLD) {
+      document.getElementById('statusDot').className   = 'status-dot error';
+      document.getElementById('statusText').textContent = 'Offline — retrying…';
+    }
     console.error('Bus fetch error:', e);
   }
 }
