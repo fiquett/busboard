@@ -9,8 +9,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="49 Bus">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
 
@@ -309,52 +307,6 @@
     color: var(--dim);
   }
 
-  /* ── Map ── */
-  .map-wrap {
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-    height: 260px;
-    position: relative;
-  }
-  #map { height: 100%; width: 100%; background: #0e1117; }
-
-  .leaflet-tile { filter: brightness(.55) saturate(.6) hue-rotate(190deg); }
-  .leaflet-container { background: #0e1117; }
-
-  .map-label { background: none !important; border: none !important; box-shadow: none !important; }
-  .ml-pin {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .ml-dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    border: 2px solid rgba(0,0,0,.4);
-    flex-shrink: 0;
-  }
-  .ml-tag {
-    font-size: .58rem;
-    font-weight: 800;
-    padding: 2px 5px;
-    border-radius: 4px;
-    white-space: nowrap;
-    box-shadow: 0 2px 6px #000a;
-    color: #0a0c10;
-  }
-  .ml-home-tag {
-    background: #fff;
-    font-size: .62rem;
-    font-weight: 800;
-    padding: 3px 6px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px #000a;
-    color: #0a0c10;
-  }
 
 
   /* ── Footer ── */
@@ -467,10 +419,6 @@
     </div>
     <div class="error-msg"><div class="shimmer" style="width:80px;height:4rem"></div></div>
   </div>
-</div>
-
-<div class="map-wrap">
-  <div id="map"></div>
 </div>
 
 <div class="footer">
@@ -730,41 +678,6 @@ async function fetchCalendar() {
 fetchCalendar();
 setInterval(fetchCalendar, 15 * 60 * 1000);
 
-// ── Map ───────────────────────────────────────────────────────────────────────
-const HOME  = [47.6296311, -122.3203];
-const NORTH = [47.628861,  -122.320114];
-const SOUTH = [47.628822,  -122.32032];
-
-const map = L.map('map', {
-  center: [47.6292, -122.3202], zoom: 18,
-  zoomControl: false, attributionControl: false,
-  dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
-  touchZoom: false, keyboard: false,
-});
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-L.marker(HOME, { icon: L.divIcon({
-  className: 'map-label',
-  html: '<div class="ml-pin"><div class="ml-dot" style="background:#fff"></div><div class="ml-home-tag">🏠 You</div></div>',
-  iconAnchor: [6, 6],
-})}).addTo(map);
-
-L.marker(NORTH, { icon: L.divIcon({
-  className: 'map-label',
-  html: '<div class="ml-pin"><div class="ml-dot" style="background:#4ade80"></div><div class="ml-tag" style="background:#4ade80">↑ NB</div></div>',
-  iconAnchor: [6, 6],
-})}).addTo(map);
-
-L.marker(SOUTH, { icon: L.divIcon({
-  className: 'map-label',
-  html: '<div class="ml-pin"><div class="ml-dot" style="background:#60a5fa"></div><div class="ml-tag" style="background:#60a5fa">↓ SB</div></div>',
-  iconAnchor: [6, 6],
-})}).addTo(map);
-
-L.polyline([HOME, [HOME[0], SOUTH[1]], SOUTH], {
-  color: '#60a5fa', weight: 2.5, opacity: .6, dashArray: '5 5',
-}).addTo(map);
 
 </script>
 </body>
