@@ -356,6 +356,59 @@
     color: #0a0c10;
   }
 
+  /* ── Pup tracker ── */
+  .pup-strip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pup-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .pup-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pup-name {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 80px;
+  }
+  .pup-timer {
+    font-size: .85rem;
+    font-weight: 700;
+    flex: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .pup-timer.ok     { color: var(--north); }
+  .pup-timer.warn   { color: var(--sched); }
+  .pup-timer.urgent { color: var(--soon); }
+  .pup-btn {
+    background: #1a1e28;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 1.1rem;
+    padding: 8px 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .1s;
+    flex-shrink: 0;
+  }
+  .pup-btn:active { background: #2a3040; }
+
   /* ── Footer ── */
   .footer {
     display: flex;
@@ -466,6 +519,22 @@
 
 <div class="map-wrap">
   <div id="map"></div>
+</div>
+
+<div class="pup-strip">
+  <div class="pup-label">🐾 Pup tracker</div>
+  <div class="pup-row">
+    <div class="pup-name">Samwise</div>
+    <div class="pup-timer" id="timerSamwise">—</div>
+    <button class="pup-btn" onclick="logPup('samwise','pee')">💧 Pee</button>
+    <button class="pup-btn" onclick="logPup('samwise','poop')">💩 Poop</button>
+  </div>
+  <div class="pup-row">
+    <div class="pup-name">Quentin</div>
+    <div class="pup-timer" id="timerQuentin">—</div>
+    <button class="pup-btn" onclick="logPup('quentin','pee')">💧 Pee</button>
+    <button class="pup-btn" onclick="logPup('quentin','poop')">💩 Poop</button>
+  </div>
 </div>
 
 <div class="footer">
@@ -723,6 +792,41 @@ L.marker(SOUTH, { icon: L.divIcon({
 L.polyline([HOME, [HOME[0], SOUTH[1]], SOUTH], {
   color: '#60a5fa', weight: 2.5, opacity: .6, dashArray: '5 5',
 }).addTo(map);
+
+// ── Pup tracker ───────────────────────────────────────────────────────────────
+const DOGS = ['samwise', 'quentin'];
+
+function logPup(dog, type) {
+  localStorage.setItem(`pup_${dog}_last`, Date.now());
+  localStorage.setItem(`pup_${dog}_type`, type);
+  renderPupTimers();
+}
+
+function elapsedStr(ms) {
+  const totalMins = Math.floor(ms / 60000);
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  if (h === 0) return `${m}m ago`;
+  return `${h}h ${m}m ago`;
+}
+
+function renderPupTimers() {
+  const now = Date.now();
+  for (const dog of DOGS) {
+    const ts   = parseInt(localStorage.getItem(`pup_${dog}_last`) || '0');
+    const type = localStorage.getItem(`pup_${dog}_type`) || '';
+    const el   = document.getElementById(`timer${dog.charAt(0).toUpperCase() + dog.slice(1)}`);
+    if (!ts) { el.textContent = 'not logged'; el.className = 'pup-timer warn'; continue; }
+    const elapsed = now - ts;
+    const hours = elapsed / 3600000;
+    const icon  = type === 'poop' ? '💩' : '💧';
+    el.textContent = `${icon} ${elapsedStr(elapsed)}`;
+    el.className   = `pup-timer ${hours >= 6 ? 'urgent' : hours >= 3 ? 'warn' : 'ok'}`;
+  }
+}
+
+renderPupTimers();
+setInterval(renderPupTimers, 60000);
 </script>
 </body>
 </html>
