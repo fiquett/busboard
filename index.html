@@ -41,14 +41,15 @@
     display: flex;
     flex-direction: column;
     padding: 36px 28px 24px;
-    gap: 22px;
+    gap: 16px;
   }
 
   /* ── Header ── */
   .header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
   }
   .route-badge {
     font-size: 1.2rem;
@@ -57,20 +58,137 @@
     color: var(--dim);
     text-transform: uppercase;
   }
+  .header-right {
+    text-align: right;
+  }
   .clock {
     font-size: 2.6rem;
     font-weight: 300;
     letter-spacing: .04em;
     color: var(--text);
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .date {
+    font-size: .95rem;
+    color: var(--dim);
+    margin-top: 3px;
+    letter-spacing: .04em;
+  }
+
+  /* ── Weather card ── */
+  .weather-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+  .wx-row1 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .wx-icon  { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+  .wx-main  { flex: 1; }
+  .wx-temp  { font-size: 2.2rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; }
+  .wx-feels { font-size: .9rem; color: var(--dim); margin-top: 2px; }
+  .wx-jacket {
+    font-size: .95rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+    flex-shrink: 0;
+  }
+  .wx-jacket.yes  { background: #1e3a5f; color: #60a5fa; border: 1px solid #60a5fa44; }
+  .wx-jacket.maybe{ background: #2d2a10; color: #f59e0b; border: 1px solid #f59e0b44; }
+  .wx-jacket.no   { background: #0f2d1a; color: #4ade80; border: 1px solid #4ade8044; }
+
+  .wx-row2 {
+    display: flex;
+    gap: 0;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .wx-stat {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .wx-stat + .wx-stat {
+    border-left: 1px solid var(--border);
+    padding-left: 14px;
+    margin-left: 14px;
+  }
+  .wx-stat-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .wx-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .wx-stat-value.aqi-good      { color: #4ade80; }
+  .wx-stat-value.aqi-moderate  { color: #f59e0b; }
+  .wx-stat-value.aqi-bad       { color: #ef4444; }
+
+  /* ── Calendar strip ── */
+  .cal-strip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 20px;
+    flex-shrink: 0;
+    display: none; /* shown when events load */
+  }
+  .cal-strip.has-events { display: block; }
+  .cal-label {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+  .cal-event {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 6px 0;
+  }
+  .cal-event + .cal-event { border-top: 1px solid var(--border); }
+  .cal-time {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--south);
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+  .cal-title {
+    font-size: .9rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ── Grid ── */
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 14px;
     flex: 1;
+    min-height: 0;
   }
 
   /* ── Direction card ── */
@@ -78,12 +196,13 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 18px;
-    padding: 28px 24px 22px;
+    padding: 22px 20px 18px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     position: relative;
     overflow: hidden;
+    min-height: 0;
   }
   .card::before {
     content: '';
@@ -96,7 +215,7 @@
   .card.south::before { background: var(--south); }
 
   .dir-label {
-    font-size: .9rem;
+    font-size: .8rem;
     font-weight: 700;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -105,9 +224,9 @@
   .card.south .dir-label { color: var(--south); }
 
   .dir-headsign {
-    font-size: .95rem;
+    font-size: .85rem;
     color: var(--dim);
-    margin-top: 4px;
+    margin-top: 3px;
   }
 
   /* ── Next bus (big) ── */
@@ -117,7 +236,7 @@
     gap: 8px;
   }
   .next-mins {
-    font-size: 7rem;
+    font-size: 6rem;
     font-weight: 900;
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -131,7 +250,7 @@
   .card.south .next-mins:not(.run):not(.hustle) { color: var(--south); }
 
   .next-unit {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 400;
     color: var(--dim);
     padding-bottom: 6px;
@@ -161,12 +280,12 @@
   .upcoming {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     border-top: 1px solid var(--border);
-    padding-top: 14px;
+    padding-top: 12px;
   }
   .upcoming-label {
-    font-size: .62rem;
+    font-size: .58rem;
     font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;
@@ -176,47 +295,19 @@
   .upcoming-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
   .up-mins {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--text);
-    min-width: 64px;
+    min-width: 56px;
   }
   .up-time {
-    font-size: .95rem;
+    font-size: .82rem;
     color: var(--dim);
   }
-
-  /* ── Weather strip ── */
-  .weather-strip {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 22px;
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    flex-shrink: 0;
-  }
-  .wx-icon  { font-size: 2.2rem; line-height: 1; }
-  .wx-temp  { font-size: 2rem; font-weight: 900; letter-spacing: -.02em; }
-  .wx-feels { font-size: .95rem; color: var(--dim); margin-top: 2px; }
-  .wx-desc  { font-size: 1rem; color: var(--text); }
-  .wx-wind  { font-size: .9rem; color: var(--dim); margin-top: 3px; }
-  .wx-jacket {
-    margin-left: auto;
-    font-size: 1rem;
-    font-weight: 700;
-    padding: 8px 16px;
-    border-radius: 20px;
-    letter-spacing: .04em;
-  }
-  .wx-jacket.yes  { background: #1e3a5f; color: #60a5fa; border: 1px solid #60a5fa44; }
-  .wx-jacket.maybe{ background: #2d2a10; color: #f59e0b; border: 1px solid #f59e0b44; }
-  .wx-jacket.no   { background: #0f2d1a; color: #4ade80; border: 1px solid #4ade8044; }
 
   /* ── Map ── */
   .map-wrap {
@@ -224,16 +315,14 @@
     overflow: hidden;
     border: 1px solid var(--border);
     flex-shrink: 0;
-    height: 320px;
+    height: 260px;
     position: relative;
   }
   #map { height: 100%; width: 100%; background: #0e1117; }
 
-  /* Dark tile filter */
   .leaflet-tile { filter: brightness(.55) saturate(.6) hue-rotate(190deg); }
   .leaflet-container { background: #0e1117; }
 
-  /* Custom marker labels */
   .map-label { background: none !important; border: none !important; box-shadow: none !important; }
   .ml-pin {
     display: flex;
@@ -272,10 +361,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 4px;
+    flex-shrink: 0;
   }
   .footer-left {
-    font-size: .68rem;
+    font-size: .65rem;
     color: var(--dim);
     letter-spacing: .04em;
   }
@@ -288,11 +377,11 @@
   }
   .status-dot.error { background: var(--soon); }
   .last-updated {
-    font-size: .68rem;
+    font-size: .65rem;
     color: var(--dim);
   }
 
-  /* ── Error state ── */
+  /* ── Error / shimmer ── */
   .error-msg {
     display: flex;
     align-items: center;
@@ -303,8 +392,6 @@
     text-align: center;
     padding: 20px;
   }
-
-  /* ── Loading shimmer ── */
   .shimmer {
     background: linear-gradient(90deg, var(--border) 25%, #252a3a 50%, var(--border) 75%);
     background-size: 200% 100%;
@@ -319,20 +406,45 @@
 
 <div class="header">
   <div class="route-badge">🚌 Route 49</div>
-  <div class="clock" id="clock">—</div>
+  <div class="header-right">
+    <div class="clock" id="clock">—</div>
+    <div class="date" id="date">—</div>
+  </div>
 </div>
 
-<div class="weather-strip" id="weatherStrip">
-  <div class="wx-icon" id="wxIcon">…</div>
-  <div>
-    <div class="wx-temp" id="wxTemp">—</div>
-    <div class="wx-feels" id="wxFeels">feels like —</div>
+<div class="weather-card">
+  <div class="wx-row1">
+    <div class="wx-icon" id="wxIcon">…</div>
+    <div class="wx-main">
+      <div class="wx-temp" id="wxTemp">—</div>
+      <div class="wx-feels" id="wxFeels">feels like —</div>
+    </div>
+    <div class="wx-jacket" id="wxJacket">…</div>
   </div>
-  <div>
-    <div class="wx-desc" id="wxDesc">—</div>
-    <div class="wx-wind" id="wxWind">—</div>
+  <div class="wx-row2">
+    <div class="wx-stat">
+      <div class="wx-stat-label">High / Low</div>
+      <div class="wx-stat-value" id="wxHiLo">—</div>
+    </div>
+    <div class="wx-stat">
+      <div class="wx-stat-label">Rain chance</div>
+      <div class="wx-stat-value" id="wxRain">—</div>
+    </div>
+    <div class="wx-stat">
+      <div class="wx-stat-label">Sunset</div>
+      <div class="wx-stat-value" id="wxSunset">—</div>
+    </div>
+    <div class="wx-stat">
+      <div class="wx-stat-label">Air quality</div>
+      <div class="wx-stat-value" id="wxAqi">—</div>
+    </div>
   </div>
-  <div class="wx-jacket" id="wxJacket">…</div>
+</div>
+
+<!-- Calendar strip — hidden until events load -->
+<div class="cal-strip" id="calStrip">
+  <div class="cal-label">📅 Coming up</div>
+  <div id="calEvents"></div>
 </div>
 
 <div class="grid">
@@ -365,6 +477,7 @@
 </div>
 
 <script>
+// ── Config ────────────────────────────────────────────────────────────────────
 const STOPS = {
   north: { id: '1_11230', el: 'cardNorth', color: 'north' },
   south: { id: '1_11010', el: 'cardSouth', color: 'south' },
@@ -374,17 +487,29 @@ const BASE_URL = 'https://api.pugetsound.onebusaway.org/api/where';
 const ROUTE    = '49';
 const REFRESH_MS = 30_000;
 
-// ── Clock ────────────────────────────────────────────────────────────────────
+// Set your Google Calendar iCal URL here to enable the calendar strip.
+// Make the calendar public, then: Google Calendar → Settings → [calendar] → Integrate → Public address in iCal format
+// Use a CORS proxy or a Google Calendar API key approach.
+// Leave empty to hide the calendar section.
+const GCAL_API_KEY     = '';   // Google Calendar API key (no OAuth needed for public calendars)
+const GCAL_CALENDAR_ID = '';   // e.g. 'abc123@group.calendar.google.com'
+
+// ── Clock + Date ──────────────────────────────────────────────────────────────
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
 function tickClock() {
   const now = new Date();
   const h = now.getHours(), m = now.getMinutes();
   document.getElementById('clock').textContent =
     `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h < 12 ? 'AM' : 'PM'}`;
+  document.getElementById('date').textContent =
+    `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
 }
 setInterval(tickClock, 1000);
 tickClock();
 
-// ── Fetch ────────────────────────────────────────────────────────────────────
+// ── Bus fetch ─────────────────────────────────────────────────────────────────
 async function fetchStop(stopId) {
   const url = `${BASE_URL}/arrivals-and-departures-for-stop/${stopId}.json`
             + `?key=${API_KEY}&minutesBefore=0&minutesAfter=90`;
@@ -392,7 +517,7 @@ async function fetchStop(stopId) {
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const d = await r.json();
   const now = d.currentTime;
-  const arrivals = (d.data.entry.arrivalsAndDepartures || [])
+  return (d.data.entry.arrivalsAndDepartures || [])
     .filter(e => e.routeShortName === ROUTE)
     .map(e => {
       const predT = e.predicted && e.predictedDepartureTime ? e.predictedDepartureTime : 0;
@@ -405,190 +530,196 @@ async function fetchStop(stopId) {
       };
     })
     .filter(e => e.mins >= 0);
-  return arrivals;
 }
 
-// ── Render ───────────────────────────────────────────────────────────────────
 function renderCard(elId, colorClass, arrivals) {
   const card = document.getElementById(elId);
+  const dirLabel   = colorClass === 'north' ? '↑ Northbound' : '↓ Southbound';
+  const dirDefault = colorClass === 'north' ? 'U-District Station' : 'Downtown Broadway';
 
   if (!arrivals || !arrivals.length) {
-    // Keep header, show no service
     card.innerHTML = `
-      <div>
-        <div class="dir-label">${colorClass === 'north' ? '↑ Northbound' : '↓ Southbound'}</div>
-        <div class="dir-headsign">${colorClass === 'north' ? 'U-District Station' : 'Downtown Broadway'}</div>
-      </div>
-      <div class="error-msg" style="color:var(--dim)">No buses in next 90 min</div>
-    `;
+      <div><div class="dir-label">${dirLabel}</div><div class="dir-headsign">${dirDefault}</div></div>
+      <div class="error-msg" style="color:var(--dim)">No buses in next 90 min</div>`;
     return;
   }
 
-  const next = arrivals[0];
+  const next     = arrivals[0];
   const minsText = next.mins <= 0 ? 'Now' : String(next.mins);
-  const isArriving = next.mins <= 0;
-  const urgency = next.mins <= 1 ? 'run' : next.mins <= 2 ? 'hustle' : '';
+  const urgency  = next.mins <= 1 ? 'run' : next.mins <= 2 ? 'hustle' : '';
 
   const upcomingRows = arrivals.slice(1, 4).map(a => `
     <div class="upcoming-row">
       <div class="up-mins">${a.mins < 2 ? 'Now' : a.mins + ' min'}</div>
       <div class="up-time">${a.time}${a.live ? '' : ' ·sched'}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 
   card.innerHTML = `
     <div>
-      <div class="dir-label">${colorClass === 'north' ? '↑ Northbound' : '↓ Southbound'}</div>
-      <div class="dir-headsign">${next.headsign || (colorClass === 'north' ? 'U-District Station' : 'Downtown Broadway')}</div>
+      <div class="dir-label">${dirLabel}</div>
+      <div class="dir-headsign">${next.headsign || dirDefault}</div>
     </div>
     <div class="next-bus">
       <div class="next-mins ${urgency}">${minsText}</div>
       ${minsText !== 'Now' ? `<div class="next-unit ${urgency}">${urgency === 'run' ? '🏃' : urgency === 'hustle' ? '🚶' : 'min'}</div>` : ''}
       <span class="live-dot ${next.live ? '' : 'sched'}" title="${next.live ? 'Live GPS' : 'Scheduled'}"></span>
     </div>
-    ${upcomingRows ? `
-    <div class="upcoming">
-      <div class="upcoming-label">Then</div>
-      ${upcomingRows}
-    </div>` : ''}
-  `;
+    ${upcomingRows ? `<div class="upcoming"><div class="upcoming-label">Then</div>${upcomingRows}</div>` : ''}`;
 }
-
-// ── Refresh ───────────────────────────────────────────────────────────────────
-let hasError = false;
 
 async function refresh() {
   try {
-    const [north, south] = await Promise.all([
-      fetchStop(STOPS.north.id),
-      fetchStop(STOPS.south.id),
-    ]);
+    const [north, south] = await Promise.all([fetchStop(STOPS.north.id), fetchStop(STOPS.south.id)]);
     renderCard('cardNorth', 'north', north);
     renderCard('cardSouth', 'south', south);
-    hasError = false;
     document.getElementById('statusDot').className   = 'status-dot';
     document.getElementById('statusText').textContent = 'Live';
     const t = new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
     document.getElementById('lastUpdated').textContent = `Updated ${t}`;
   } catch (e) {
-    hasError = true;
     document.getElementById('statusDot').className   = 'status-dot error';
     document.getElementById('statusText').textContent = 'Offline — retrying…';
     console.error('Bus fetch error:', e);
   }
 }
-
 refresh();
 setInterval(refresh, REFRESH_MS);
 
 // ── Weather ───────────────────────────────────────────────────────────────────
 const WMO = {
-  0:  ['☀️',  'Clear'],
-  1:  ['🌤',  'Mostly clear'],
-  2:  ['⛅️', 'Partly cloudy'],
-  3:  ['☁️',  'Overcast'],
-  45: ['🌫',  'Foggy'],
-  48: ['🌫',  'Freezing fog'],
-  51: ['🌦',  'Light drizzle'],
-  53: ['🌧',  'Drizzle'],
-  55: ['🌧',  'Heavy drizzle'],
-  61: ['🌧',  'Light rain'],
-  63: ['🌧',  'Rain'],
-  65: ['🌧',  'Heavy rain'],
-  71: ['🌨',  'Light snow'],
-  73: ['❄️',  'Snow'],
-  75: ['❄️',  'Heavy snow'],
-  80: ['🌦',  'Rain showers'],
-  81: ['🌧',  'Showers'],
-  82: ['⛈',  'Heavy showers'],
-  95: ['⛈',  'Thunderstorm'],
-  99: ['⛈',  'Severe storm'],
+  0:  ['☀️','Clear'],   1: ['🌤','Mostly clear'],  2: ['⛅️','Partly cloudy'],
+  3:  ['☁️','Overcast'],45: ['🌫','Foggy'],         48: ['🌫','Freezing fog'],
+  51: ['🌦','Light drizzle'], 53: ['🌧','Drizzle'], 55: ['🌧','Heavy drizzle'],
+  61: ['🌧','Light rain'],    63: ['🌧','Rain'],     65: ['🌧','Heavy rain'],
+  71: ['🌨','Light snow'],    73: ['❄️','Snow'],     75: ['❄️','Heavy snow'],
+  80: ['🌦','Rain showers'],  81: ['🌧','Showers'],  82: ['⛈','Heavy showers'],
+  95: ['⛈','Thunderstorm'],   99: ['⛈','Severe storm'],
 };
 
 async function fetchWeather() {
-  const url = 'https://api.open-meteo.com/v1/forecast'
-    + '?latitude=47.6296&longitude=-122.3206'
-    + '&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m'
-    + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch';
-  const r = await fetch(url);
-  const d = await r.json();
-  const c = d.current;
+  const [wxRes, aqiRes] = await Promise.all([
+    fetch('https://api.open-meteo.com/v1/forecast'
+      + '?latitude=47.6296&longitude=-122.3206'
+      + '&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m'
+      + '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset'
+      + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
+      + '&timezone=America%2FLos_Angeles'),
+    fetch('https://air-quality-api.open-meteo.com/v1/air-quality'
+      + '?latitude=47.6296&longitude=-122.3206&current=us_aqi'),
+  ]);
 
-  const [icon, desc] = WMO[c.weather_code] || ['🌡', 'Unknown'];
+  const wx  = await wxRes.json();
+  const aqi = await aqiRes.json();
+  const c   = wx.current;
+  const d   = wx.daily;
+
+  const [icon, desc] = WMO[c.weather_code] || ['🌡','Unknown'];
   const temp   = Math.round(c.temperature_2m);
   const feels  = Math.round(c.apparent_temperature);
   const wind   = Math.round(c.wind_speed_10m);
   const gusts  = Math.round(c.wind_gusts_10m);
   const rain   = c.precipitation > 0;
+  const hi     = Math.round(d.temperature_2m_max[0]);
+  const lo     = Math.round(d.temperature_2m_min[0]);
+  const rainPct = d.precipitation_probability_max[0];
+  const sunsetRaw = d.sunset[0]; // e.g. "2026-03-21T19:42"
+  const sunsetTime = new Date(sunsetRaw).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  const aqiVal = Math.round(aqi.current.us_aqi);
 
   document.getElementById('wxIcon').textContent  = icon;
   document.getElementById('wxTemp').textContent  = `${temp}°F`;
-  document.getElementById('wxFeels').textContent = `feels like ${feels}°F`;
-  document.getElementById('wxDesc').textContent  = desc + (rain ? ' 🌂' : '');
-  document.getElementById('wxWind').textContent  = gusts > wind + 5
-    ? `💨 ${wind} mph, gusts ${gusts}`
-    : wind > 5 ? `💨 ${wind} mph` : 'Calm';
+  document.getElementById('wxFeels').textContent = `feels like ${feels}°F  ·  ${desc}${rain ? ' 🌂' : ''}`;
+
+  const windStr = gusts > wind + 5 ? `💨 ${wind} mph gusts ${gusts}` : wind > 5 ? `💨 ${wind} mph` : 'Calm';
+  document.getElementById('wxHiLo').textContent   = `${hi}° / ${lo}°`;
+  document.getElementById('wxRain').textContent   = `${rainPct}%`;
+  document.getElementById('wxSunset').textContent = sunsetTime;
+
+  const aqiEl = document.getElementById('wxAqi');
+  let aqiLabel, aqiClass;
+  if      (aqiVal <= 50)  { aqiLabel = `${aqiVal} Good`;      aqiClass = 'aqi-good'; }
+  else if (aqiVal <= 100) { aqiLabel = `${aqiVal} Moderate`;  aqiClass = 'aqi-moderate'; }
+  else                    { aqiLabel = `${aqiVal} Poor`;       aqiClass = 'aqi-bad'; }
+  aqiEl.textContent = aqiLabel;
+  aqiEl.className   = `wx-stat-value ${aqiClass}`;
 
   // Jacket logic
   const jacket = document.getElementById('wxJacket');
   if (feels < 45 || rain || gusts > 25) {
-    jacket.textContent = '🧥 Jacket';
-    jacket.className = 'wx-jacket yes';
+    jacket.textContent = '🧥 Jacket'; jacket.className = 'wx-jacket yes';
   } else if (feels < 58) {
-    jacket.textContent = '🤔 Maybe';
-    jacket.className = 'wx-jacket maybe';
+    jacket.textContent = '🤔 Maybe';  jacket.className = 'wx-jacket maybe';
   } else {
-    jacket.textContent = '✓ No jacket';
-    jacket.className = 'wx-jacket no';
+    jacket.textContent = '✓ No jacket'; jacket.className = 'wx-jacket no';
   }
 }
-
 fetchWeather();
-setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+setInterval(fetchWeather, 10 * 60 * 1000);
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+async function fetchCalendar() {
+  if (!GCAL_API_KEY || !GCAL_CALENDAR_ID) return;
+  try {
+    const now    = new Date().toISOString();
+    const dayEnd = new Date(); dayEnd.setHours(23, 59, 59);
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GCAL_CALENDAR_ID)}/events`
+      + `?key=${GCAL_API_KEY}&timeMin=${now}&timeMax=${dayEnd.toISOString()}`
+      + `&maxResults=4&orderBy=startTime&singleEvents=true`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const events = (d.items || []).filter(e => e.status !== 'cancelled');
+    if (!events.length) return;
+
+    document.getElementById('calStrip').classList.add('has-events');
+    document.getElementById('calEvents').innerHTML = events.map(e => {
+      const start = e.start.dateTime ? new Date(e.start.dateTime) : null;
+      const timeStr = start
+        ? start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})
+        : 'All day';
+      return `<div class="cal-event">
+        <div class="cal-time">${timeStr}</div>
+        <div class="cal-title">${e.summary || 'Event'}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('Calendar fetch error:', e);
+  }
+}
+fetchCalendar();
+setInterval(fetchCalendar, 15 * 60 * 1000);
 
 // ── Map ───────────────────────────────────────────────────────────────────────
-const HOME  = [47.6296311, -122.3203];    // 1131 10th Ave E — snapped to street lon
-const NORTH = [47.628861,  -122.320114];  // stop 11230 — NB, cross the street
-const SOUTH = [47.628822,  -122.32032];   // stop 11010 — SB, turn right
+const HOME  = [47.6296311, -122.3203];
+const NORTH = [47.628861,  -122.320114];
+const SOUTH = [47.628822,  -122.32032];
 
 const map = L.map('map', {
-  center: [47.6292, -122.3202],
-  zoom: 17,
-  zoomControl: false,
-  attributionControl: false,
-  dragging: false,
-  scrollWheelZoom: false,
-  doubleClickZoom: false,
-  touchZoom: false,
-  keyboard: false,
+  center: [47.6292, -122.3202], zoom: 17,
+  zoomControl: false, attributionControl: false,
+  dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+  touchZoom: false, keyboard: false,
 });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-// Home marker
 L.marker(HOME, { icon: L.divIcon({
   className: 'map-label',
   html: '<div class="ml-pin"><div class="ml-dot" style="background:#fff"></div><div class="ml-home-tag">🏠 You</div></div>',
   iconAnchor: [6, 6],
 })}).addTo(map);
 
-// Northbound stop — single marker, dot + label
 L.marker(NORTH, { icon: L.divIcon({
   className: 'map-label',
   html: '<div class="ml-pin"><div class="ml-dot" style="background:#4ade80"></div><div class="ml-tag" style="background:#4ade80">↑ NB</div></div>',
   iconAnchor: [6, 6],
 })}).addTo(map);
 
-// Southbound stop — single marker, dot + label
 L.marker(SOUTH, { icon: L.divIcon({
   className: 'map-label',
   html: '<div class="ml-pin"><div class="ml-dot" style="background:#60a5fa"></div><div class="ml-tag" style="background:#60a5fa">↓ SB</div></div>',
   iconAnchor: [6, 6],
 })}).addTo(map);
 
-// Walking line to southbound (simple, right turn)
 L.polyline([HOME, [HOME[0], SOUTH[1]], SOUTH], {
   color: '#60a5fa', weight: 2.5, opacity: .6, dashArray: '5 5',
 }).addTo(map);
