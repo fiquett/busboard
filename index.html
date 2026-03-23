@@ -384,7 +384,8 @@
       <div class="wx-stat-value" id="wxRain">—</div>
     </div>
     <div class="wx-stat">
-      <div class="wx-stat-label">Sunset</div>
+      <div class="wx-stat-label">Sunrise / Set</div>
+      <div class="wx-stat-value" id="wxSunrise">—</div>
       <div class="wx-stat-value" id="wxSunset">—</div>
     </div>
     <div class="wx-stat">
@@ -591,7 +592,7 @@ async function fetchWeather() {
     fetch('https://api.open-meteo.com/v1/forecast'
       + '?latitude=47.6296&longitude=-122.3206'
       + '&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_gusts_10m'
-      + '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset'
+      + '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset'
       + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
       + '&timezone=America%2FLos_Angeles'),
     fetch('https://air-quality-api.open-meteo.com/v1/air-quality'
@@ -612,8 +613,8 @@ async function fetchWeather() {
   const hi     = Math.round(d.temperature_2m_max[0]);
   const lo     = Math.round(d.temperature_2m_min[0]);
   const rainPct = d.precipitation_probability_max[0];
-  const sunsetRaw = d.sunset[0]; // e.g. "2026-03-21T19:42"
-  const sunsetTime = new Date(sunsetRaw).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
+  const sunriseTime = new Date(d.sunrise[0]).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
+  const sunsetTime  = new Date(d.sunset[0]).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
   const aqiVal = Math.round(aqi.current.us_aqi);
 
   document.getElementById('wxIcon').textContent  = icon;
@@ -623,7 +624,8 @@ async function fetchWeather() {
   const windStr = gusts > wind + 5 ? `💨 ${wind} mph gusts ${gusts}` : wind > 5 ? `💨 ${wind} mph` : 'Calm';
   document.getElementById('wxHiLo').textContent   = `${hi}° / ${lo}°`;
   document.getElementById('wxRain').textContent   = `${rainPct}%`;
-  document.getElementById('wxSunset').textContent = sunsetTime;
+  document.getElementById('wxSunrise').textContent = sunriseTime;
+  document.getElementById('wxSunset').textContent  = sunsetTime;
 
   const aqiEl = document.getElementById('wxAqi');
   let aqiLabel, aqiClass;
