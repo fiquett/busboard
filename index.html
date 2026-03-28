@@ -296,14 +296,14 @@
     gap: 8px;
   }
   .up-mins {
-    font-size: 3.0rem;
+    font-size: 2.6rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--text);
-    min-width: 80px;
+    min-width: 70px;
   }
   .up-time {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: var(--dim);
   }
 
@@ -314,7 +314,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 12px 16px;
+    padding: 16px 20px;
     flex-shrink: 0;
     display: flex;
     gap: 12px;
@@ -323,10 +323,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
   .pup-name {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
@@ -341,16 +341,23 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    padding: 6px 4px;
+    border-radius: 8px;
   }
+  .pup-timer:active { background: var(--border); }
   .pup-timer-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: .08em;
   }
   .pup-timer-value {
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--text);
@@ -363,16 +370,17 @@
   }
   .pup-btn {
     flex: 1;
-    padding: 6px 4px;
+    padding: 10px 8px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--text);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     cursor: pointer;
     text-align: center;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    touch-action: manipulation;
   }
   .pup-btn:active { background: var(--border); }
   .pup-divider {
@@ -498,11 +506,11 @@
   <div class="pup-card" id="pupSamwise">
     <div class="pup-name">🐾 Samwise</div>
     <div class="pup-timers">
-      <div class="pup-timer">
+      <div class="pup-timer" onclick="pupLog('sam','pee')">
         <div class="pup-timer-label">💦 Pee</div>
         <div class="pup-timer-value" id="samPee">—</div>
       </div>
-      <div class="pup-timer">
+      <div class="pup-timer" onclick="pupLog('sam','poop')">
         <div class="pup-timer-label">💩 Poop</div>
         <div class="pup-timer-value" id="samPoop">—</div>
       </div>
@@ -516,11 +524,11 @@
   <div class="pup-card" id="pupQuentin">
     <div class="pup-name">🐾 Quentin</div>
     <div class="pup-timers">
-      <div class="pup-timer">
+      <div class="pup-timer" onclick="pupLog('quentin','pee')">
         <div class="pup-timer-label">💦 Pee</div>
         <div class="pup-timer-value" id="quentinPee">—</div>
       </div>
-      <div class="pup-timer">
+      <div class="pup-timer" onclick="pupLog('quentin','poop')">
         <div class="pup-timer-label">💩 Poop</div>
         <div class="pup-timer-value" id="quentinPoop">—</div>
       </div>
@@ -833,7 +841,7 @@ function renderPups() {
       const elapsedMs   = ts ? now - ts : null;
       const elapsedMins = elapsedMs ? Math.floor(elapsedMs / 60000) : null;
       const el = document.getElementById(`${prefix}${type.charAt(0).toUpperCase() + type.slice(1)}`);
-      el.textContent = elapsedMs ? fmtElapsed(elapsedMs) : 'tap';
+      el.textContent = elapsedMs ? fmtElapsed(elapsedMs) : '—';
       el.className = 'pup-timer-value';
       if (elapsedMins !== null) {
         const warn = type === 'pee' ? PEE_WARN  : POOP_WARN;
