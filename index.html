@@ -575,6 +575,7 @@
 // Pup sync: pup state is synced via the self-hosted endpoint on blueumbrella K8s.
 // Served as a sidecar at hearth.fiquett.com/pups — no external service needed.
 const FIREBASE_URL = 'https://hearth.fiquett.com';
+const PUP_SYNC_TOKEN = '47e24d65b6345ed0613d812463e27865b1e009fb5a136cb0072990c2f3f33814';
 
 const STOPS = {
   north: { id: '1_11230', el: 'cardNorth', color: 'north' },
@@ -858,7 +859,7 @@ async function pupSyncPush() {
   try {
     await fetch(FIREBASE_URL + '/pups', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + PUP_SYNC_TOKEN },
       body: JSON.stringify(pupStateFromLocalStorage()),
     });
   } catch(e) { /* silently fail */ }
@@ -867,7 +868,7 @@ async function pupSyncPush() {
 async function pupSyncPull() {
   if (!FIREBASE_URL) return;
   try {
-    const r = await fetch(FIREBASE_URL + '/pups');
+    const r = await fetch(FIREBASE_URL + '/pups', { headers: { 'Authorization': 'Bearer ' + PUP_SYNC_TOKEN } });
     if (!r.ok) return;
     const remote = await r.json();
     if (!remote) return;

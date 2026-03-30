@@ -12,6 +12,7 @@ import json, os, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 STATE_FILE = os.environ.get('PUP_STATE_FILE', os.path.join(os.path.dirname(__file__), 'pup-state.json'))
+TOKEN = os.environ.get('PUP_SYNC_TOKEN', '')
 state = {}
 lock = threading.Lock()
 
@@ -35,7 +36,13 @@ class Handler(BaseHTTPRequestHandler):
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+    def _authorized(self):
+        if not TOKEN:
+            return True
+        auth = self.headers.get('Authorization', '')
+        return auth == f'Bearer {TOKEN}'
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -45,6 +52,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path != '/pups':
             self.send_response(404); self.end_headers(); return
+        if not self._authorized():
+            self.send_response(401); self.end_headers(); return
         body = json.dumps(state).encode()
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
@@ -55,6 +64,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != '/pups':
             self.send_response(404); self.end_headers(); return
+        if not self._authorized():
+            self.send_response(401); self.end_headers(); return
         length = int(self.headers.get('Content-Length', 0))
         body = json.loads(self.rfile.read(length))
         with lock:
