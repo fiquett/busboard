@@ -332,57 +332,43 @@
     text-transform: uppercase;
     color: var(--dim);
   }
-  .pup-timers {
+  .pup-btns {
     display: flex;
-    gap: 10px;
+    gap: 8px;
   }
-  .pup-timer {
+  .pup-btn {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 4px;
+    padding: 14px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
     cursor: pointer;
-    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-    padding: 6px 4px;
-    border-radius: 8px;
+    touch-action: manipulation;
+    min-height: 80px;
   }
-  .pup-timer:active { background: var(--border); }
-  .pup-timer-label {
+  .pup-btn:active { background: var(--border); }
+  .pup-btn-label {
     font-size: 0.9rem;
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: .08em;
   }
-  .pup-timer-value {
+  .pup-btn-value {
     font-size: 1.8rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--text);
   }
-  .pup-timer-value.warn { color: var(--sched); }
-  .pup-timer-value.late { color: var(--soon); }
-  .pup-btns {
-    display: flex;
-    gap: 6px;
-  }
-  .pup-btn {
-    flex: 1;
-    padding: 10px 8px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 1.15rem;
-    cursor: pointer;
-    text-align: center;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    touch-action: manipulation;
-  }
-  .pup-btn:active { background: var(--border); }
+  .pup-btn-value.warn { color: var(--sched); }
+  .pup-btn-value.late { color: var(--soon); }
   .pup-divider {
     width: 1px;
     background: var(--border);
@@ -406,9 +392,9 @@
     .up-mins   { font-size: 1.8rem; }
     .up-time   { font-size: 0.9rem; }
     .dir-label { font-size: 1.1rem; }
-    .pup-timer-value { font-size: 1.4rem; }
-    .pup-name  { font-size: 1.0rem; }
-    .pup-btn   { font-size: 1.0rem; padding: 8px 4px; }
+    .pup-btn-value { font-size: 1.4rem; }
+    .pup-name      { font-size: 1.0rem; }
+    .pup-btn       { padding: 10px 6px; min-height: 60px; }
   }
 
   /* ── Footer ── */
@@ -527,37 +513,29 @@
 <div class="pup-strip" id="pupStrip">
   <div class="pup-card" id="pupSamwise">
     <div class="pup-name">🐾 Samwise</div>
-    <div class="pup-timers">
-      <div class="pup-timer" onclick="pupLog('sam','pee')">
-        <div class="pup-timer-label">💦 Pee</div>
-        <div class="pup-timer-value" id="samPee">—</div>
-      </div>
-      <div class="pup-timer" onclick="pupLog('sam','poop')">
-        <div class="pup-timer-label">💩 Poop</div>
-        <div class="pup-timer-value" id="samPoop">—</div>
-      </div>
-    </div>
     <div class="pup-btns">
-      <div class="pup-btn" onclick="pupLog('sam','pee')">💦 Pee</div>
-      <div class="pup-btn" onclick="pupLog('sam','poop')">💦💩 Both</div>
+      <button class="pup-btn" onclick="pupLog('sam','pee')">
+        <span class="pup-btn-label">💦 Pee</span>
+        <span class="pup-btn-value" id="samPee">—</span>
+      </button>
+      <button class="pup-btn" onclick="pupLog('sam','poop')">
+        <span class="pup-btn-label">💩 Poop</span>
+        <span class="pup-btn-value" id="samPoop">—</span>
+      </button>
     </div>
   </div>
   <div class="pup-divider"></div>
   <div class="pup-card" id="pupQuentin">
     <div class="pup-name">🐾 Quentin</div>
-    <div class="pup-timers">
-      <div class="pup-timer" onclick="pupLog('quentin','pee')">
-        <div class="pup-timer-label">💦 Pee</div>
-        <div class="pup-timer-value" id="quentinPee">—</div>
-      </div>
-      <div class="pup-timer" onclick="pupLog('quentin','poop')">
-        <div class="pup-timer-label">💩 Poop</div>
-        <div class="pup-timer-value" id="quentinPoop">—</div>
-      </div>
-    </div>
     <div class="pup-btns">
-      <div class="pup-btn" onclick="pupLog('quentin','pee')">💦 Pee</div>
-      <div class="pup-btn" onclick="pupLog('quentin','poop')">💦💩 Both</div>
+      <button class="pup-btn" onclick="pupLog('quentin','pee')">
+        <span class="pup-btn-label">💦 Pee</span>
+        <span class="pup-btn-value" id="quentinPee">—</span>
+      </button>
+      <button class="pup-btn" onclick="pupLog('quentin','poop')">
+        <span class="pup-btn-label">💩 Poop</span>
+        <span class="pup-btn-value" id="quentinPoop">—</span>
+      </button>
     </div>
   </div>
 </div>
@@ -909,7 +887,7 @@ function renderPups() {
       const elapsedMins = elapsedMs ? Math.floor(elapsedMs / 60000) : null;
       const el = document.getElementById(`${prefix}${type.charAt(0).toUpperCase() + type.slice(1)}`);
       el.textContent = elapsedMs ? fmtElapsed(elapsedMs) : '—';
-      el.className = 'pup-timer-value';
+      el.className = 'pup-btn-value';
       if (elapsedMins !== null) {
         const warn = type === 'pee' ? PEE_WARN  : POOP_WARN;
         const late = type === 'pee' ? PEE_LATE  : POOP_LATE;
