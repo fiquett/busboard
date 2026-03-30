@@ -572,13 +572,9 @@
 
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
-// Pup sync: set FIREBASE_URL to share pup state across all devices in real-time.
-// 1. Go to https://console.firebase.google.com → Add project (free)
-// 2. Build → Realtime Database → Create database (start in test mode)
-// 3. Copy the database URL (e.g. https://your-project-default-rtdb.firebaseio.com)
-// 4. Paste it below (no trailing slash).
-// Leave empty to use localStorage only.
-const FIREBASE_URL = '';
+// Pup sync: pup state is synced via the self-hosted endpoint on blueumbrella K8s.
+// Served as a sidecar at hearth.fiquett.com/pups — no external service needed.
+const FIREBASE_URL = 'https://hearth.fiquett.com';
 
 const STOPS = {
   north: { id: '1_11230', el: 'cardNorth', color: 'north' },
@@ -860,9 +856,8 @@ function pupStateFromLocalStorage() {
 
 async function pupSyncPush() {
   try {
-    // PATCH so each key is written independently — no risk of wiping concurrent updates
-    await fetch(FIREBASE_URL + '/pups.json', {
-      method: 'PATCH',
+    await fetch(FIREBASE_URL + '/pups', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(pupStateFromLocalStorage()),
     });
@@ -872,7 +867,7 @@ async function pupSyncPush() {
 async function pupSyncPull() {
   if (!FIREBASE_URL) return;
   try {
-    const r = await fetch(FIREBASE_URL + '/pups.json');
+    const r = await fetch(FIREBASE_URL + '/pups');
     if (!r.ok) return;
     const remote = await r.json();
     if (!remote) return;

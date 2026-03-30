@@ -11,7 +11,7 @@ Autostart: add to Pi 3 ~/.config/openbox/autostart:
 import json, os, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-STATE_FILE = os.path.join(os.path.dirname(__file__), 'pup-state.json')
+STATE_FILE = os.environ.get('PUP_STATE_FILE', os.path.join(os.path.dirname(__file__), 'pup-state.json'))
 state = {}
 lock = threading.Lock()
 
