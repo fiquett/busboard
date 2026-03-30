@@ -865,8 +865,9 @@ pupSyncPull();
 setInterval(pupSyncPull, 30_000);
 
 function fmtElapsed(ms) {
-  if (!ms) return '—';
+  if (ms === null || ms === undefined) return '—';
   const mins = Math.floor(ms / 60000);
+  if (mins < 1) return '0m';
   const h = Math.floor(mins / 60), m = mins % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
@@ -884,9 +885,9 @@ function renderPups() {
     for (const type of ['pee', 'poop']) {
       const ts = parseInt(localStorage.getItem(keys[type]) || '0', 10);
       const elapsedMs   = ts ? now - ts : null;
-      const elapsedMins = elapsedMs ? Math.floor(elapsedMs / 60000) : null;
+      const elapsedMins = elapsedMs !== null ? Math.floor(elapsedMs / 60000) : null;
       const el = document.getElementById(`${prefix}${type.charAt(0).toUpperCase() + type.slice(1)}`);
-      el.textContent = elapsedMs ? fmtElapsed(elapsedMs) : '—';
+      el.textContent = elapsedMs !== null ? fmtElapsed(elapsedMs) : '—';
       el.className = 'pup-btn-value';
       if (elapsedMins !== null) {
         const warn = type === 'pee' ? PEE_WARN  : POOP_WARN;
