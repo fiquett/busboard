@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>49 Bus</title>
+<title>Hearth</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0a0c10">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="49 Bus">
+<meta name="apple-mobile-web-app-title" content="Hearth">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
 
@@ -389,6 +389,28 @@
     flex-shrink: 0;
   }
 
+  /* ── Mobile (iPhone etc — Pi kiosk viewport is ~533px so this won't trigger there) ── */
+  @media (max-width: 480px) {
+    html, body { overflow: auto; height: auto; }
+    body { padding: 20px 16px 20px; gap: 12px; }
+    .clock { font-size: 2.6rem; }
+    .date  { font-size: 1.0rem; }
+    .route-badge { font-size: 1.4rem; }
+    .wx-temp   { font-size: 1.8rem; }
+    .wx-feels  { font-size: 1.0rem; }
+    .wx-jacket { font-size: 1.0rem; padding: 6px 10px; }
+    .wx-stat-label { font-size: 0.85rem; }
+    .wx-stat-value { font-size: 1.1rem; }
+    .next-mins { font-size: 5.5rem; }
+    .next-unit { font-size: 1.5rem; }
+    .up-mins   { font-size: 1.8rem; }
+    .up-time   { font-size: 0.9rem; }
+    .dir-label { font-size: 1.1rem; }
+    .pup-timer-value { font-size: 1.4rem; }
+    .pup-name  { font-size: 1.0rem; }
+    .pup-btn   { font-size: 1.0rem; padding: 8px 4px; }
+  }
+
   /* ── Footer ── */
   .footer {
     display: flex;
@@ -550,6 +572,14 @@
 
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
+// Pup sync: set FIREBASE_URL to share pup state across all devices in real-time.
+// 1. Go to https://console.firebase.google.com → Add project (free)
+// 2. Build → Realtime Database → Create database (start in test mode)
+// 3. Copy the database URL (e.g. https://your-project-default-rtdb.firebaseio.com)
+// 4. Paste it below (no trailing slash).
+// Leave empty to use localStorage only.
+const FIREBASE_URL = '';
+
 const STOPS = {
   north: { id: '1_11230', el: 'cardNorth', color: 'north' },
   south: { id: '1_11010', el: 'cardSouth', color: 'south' },
@@ -817,7 +847,48 @@ function pupLog(dog, type) {
   localStorage.setItem(PUP_KEYS[dog].pee, now);
   if (type === 'poop') localStorage.setItem(PUP_KEYS[dog].poop, now);
   renderPups();
+  if (FIREBASE_URL) pupSyncPush();
 }
+
+function pupStateFromLocalStorage() {
+  const state = {};
+  for (const [dog, keys] of Object.entries(PUP_KEYS))
+    for (const type of ['pee','poop'])
+      state[keys[type]] = parseInt(localStorage.getItem(keys[type]) || '0', 10);
+  return state;
+}
+
+async function pupSyncPush() {
+  try {
+    // PATCH so each key is written independently — no risk of wiping concurrent updates
+    await fetch(FIREBASE_URL + '/pups.json', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pupStateFromLocalStorage()),
+    });
+  } catch(e) { /* silently fail */ }
+}
+
+async function pupSyncPull() {
+  if (!FIREBASE_URL) return;
+  try {
+    const r = await fetch(FIREBASE_URL + '/pups.json');
+    if (!r.ok) return;
+    const remote = await r.json();
+    if (!remote) return;
+    // merge: keep the latest timestamp for each key
+    for (const [dog, keys] of Object.entries(PUP_KEYS))
+      for (const type of ['pee','poop']) {
+        const k = keys[type];
+        const local  = parseInt(localStorage.getItem(k) || '0', 10);
+        const server = parseInt(remote[k] || '0', 10);
+        if (server > local) localStorage.setItem(k, server);
+      }
+    renderPups();
+  } catch(e) { /* silently fail */ }
+}
+pupSyncPull();
+setInterval(pupSyncPull, 30_000);
 
 function fmtElapsed(ms) {
   if (!ms) return '—';
