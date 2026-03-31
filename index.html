@@ -49,10 +49,26 @@
     justify-content: space-between;
     flex-shrink: 0;
   }
-  .route-badge {
-    font-size: 2rem;
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wordmark-title {
+    font-size: 1.6rem;
     font-weight: 700;
-    letter-spacing: .12em;
+    letter-spacing: .08em;
+    color: var(--text);
+    text-transform: lowercase;
+    line-height: 1;
+  }
+  .route-badge {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: .1em;
     color: var(--dim);
     text-transform: uppercase;
   }
@@ -448,7 +464,10 @@
 <body>
 
 <div class="header">
-  <div class="route-badge">🚌 Route 49</div>
+  <div class="wordmark" onclick="location.reload()">
+    <div class="wordmark-title">hearth</div>
+    <div class="route-badge">🚌 Route 49</div>
+  </div>
   <div class="header-right">
     <div class="clock" id="clock">—</div>
     <div class="date" id="date">—</div>
