@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artemis II — Launch Countdown</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold:  #f5c842;
+    --blue:  #4fc3f7;
+    --red:   #ef5350;
+    --dim:   #607d8b;
+    --text:  #eceff1;
+    --bg:    #020408;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  /* Starfield */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 28px 24px;
+    position: relative;
+  }
+
+  .patch {
+    font-size: 4rem;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .mission {
+    font-family: 'Space Mono', monospace;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: var(--dim);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: var(--dim);
+    margin: 20px 0;
+    opacity: .4;
+  }
+
+  .countdown-label {
+    font-size: 0.75rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .countdown {
+    font-family: 'Space Mono', monospace;
+    font-size: 5.5rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: var(--text);
+    text-align: center;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    transition: color .3s;
+  }
+
+  .countdown.soon  { color: var(--gold); }
+  .countdown.final { color: var(--red);  animation: pulse .5s ease-in-out infinite alternate; }
+  .countdown.gone  { color: var(--blue); font-size: 3.5rem; }
+
+  @keyframes pulse { from { opacity: 1; } to { opacity: .5; } }
+
+  .launch-time {
+    font-size: 0.8rem;
+    color: var(--dim);
+    letter-spacing: .1em;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .divider2 {
+    width: 60px;
+    height: 1px;
+    background: var(--dim);
+    margin: 20px 0;
+    opacity: .4;
+  }
+
+  .crew-label {
+    font-size: 0.7rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .crew {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .crew-member {
+    font-size: 0.85rem;
+    color: var(--text);
+    letter-spacing: .06em;
+    text-align: center;
+  }
+
+  .crew-role {
+    color: var(--dim);
+    font-size: 0.75rem;
+  }
+
+  .back {
+    position: fixed;
+    bottom: 18px;
+    right: 20px;
+    font-size: 0.7rem;
+    color: #263238;
+    letter-spacing: .06em;
+    cursor: pointer;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .back:hover, .back:active { color: var(--dim); }
+
+  /* Post-launch celebration */
+  .liftoff {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .liftoff.show { display: flex; }
+  .liftoff-emoji { font-size: 5rem; animation: rise 2s ease-out forwards; }
+  @keyframes rise { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .liftoff-title { font-family: 'Space Mono', monospace; font-size: 2.2rem; font-weight: 700; color: var(--gold); letter-spacing: .12em; }
+  .liftoff-sub { font-size: 0.85rem; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
+  .elapsed { font-family: 'Space Mono', monospace; font-size: 1.8rem; color: var(--blue); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div id="prelaunch">
+  <div class="patch">🚀</div>
+  <div class="mission">Artemis II</div>
+  <div class="subtitle">First crewed lunar flyby in 50 years</div>
+
+  <div class="divider"></div>
+
+  <div class="countdown-label">T− until launch</div>
+  <div class="countdown" id="countdown">--:--:--</div>
+  <div class="launch-time" id="launchTime">Launch: Wed Apr 1 · 6:24 PM EDT · 3:24 PM PDT</div>
+
+  <div class="divider2"></div>
+
+  <div class="crew-label">Crew</div>
+  <div class="crew">
+    <div class="crew-member">Reid Wiseman <span class="crew-role">CDR</span></div>
+    <div class="crew-member">Victor Glover <span class="crew-role">PLT</span></div>
+    <div class="crew-member">Christina Koch <span class="crew-role">MS</span></div>
+    <div class="crew-member">Jeremy Hansen <span class="crew-role">MS · CSA</span></div>
+  </div>
+</div>
+
+<div class="liftoff" id="liftoff">
+  <div class="liftoff-emoji">🌕</div>
+  <div class="liftoff-title">Liftoff!</div>
+  <div class="liftoff-sub">Artemis II — En route to the Moon</div>
+  <div class="elapsed" id="elapsed">T+0:00:00</div>
+</div>
+
+<div class="back" onclick="window.location='/'">← hearth</div>
+
+<script>
+// Starfield
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function initStars() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  stars = Array.from({length: 200}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.4 + .2,
+    o: Math.random() * .7 + .3,
+    d: (Math.random() - .5) * .004,
+  }));
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const s of stars) {
+    s.o = Math.max(.1, Math.min(1, s.o + s.d));
+    if (s.o <= .1 || s.o >= 1) s.d *= -1;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${s.o})`;
+    ctx.fill();
+  }
+  requestAnimationFrame(drawStars);
+}
+
+initStars();
+drawStars();
+window.addEventListener('resize', initStars);
+
+// Countdown — launch: 2026-04-01T22:24:00Z
+const LAUNCH = new Date('2026-04-01T22:24:00Z').getTime();
+
+function pad(n) { return String(Math.floor(n)).padStart(2,'0'); }
+
+function tick() {
+  const now  = Date.now();
+  const diff = LAUNCH - now;
+
+  if (diff > 0) {
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const el = document.getElementById('countdown');
+    el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+    el.className = 'countdown' + (diff < 60000 ? ' final' : diff < 600000 ? ' soon' : '');
+  } else {
+    // Post-launch
+    document.getElementById('prelaunch').style.display = 'none';
+    document.getElementById('liftoff').classList.add('show');
+    const elapsed = Math.abs(diff);
+    const h = Math.floor(elapsed / 3600000);
+    const m = Math.floor((elapsed % 3600000) / 60000);
+    const s = Math.floor((elapsed % 60000) / 1000);
+    document.getElementById('elapsed').textContent = `T+${h}:${pad(m)}:${pad(s)}`;
+  }
+}
+
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
