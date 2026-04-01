@@ -69,10 +69,22 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get('Content-Length', 0))
         body = json.loads(self.rfile.read(length))
         with lock:
-            # merge: keep latest timestamp per key
+            # merge current state: keep latest timestamp per key
             for k, v in body.items():
+                if k == 'history':
+                    continue
                 if int(v or 0) > int(state.get(k) or 0):
                     state[k] = v
+            # merge history: union by event id, keep newest 1000
+            remote_history = body.get('history', [])
+            local_history = state.get('history', [])
+            ids_seen = {e['id'] for e in local_history if e.get('id')}
+            for event in remote_history:
+                if event.get('id') and event['id'] not in ids_seen:
+                    local_history.append(event)
+                    ids_seen.add(event['id'])
+            local_history.sort(key=lambda e: e.get('ts', 0))
+            state['history'] = local_history[-1000:]
             save()
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')

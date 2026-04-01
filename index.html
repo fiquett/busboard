@@ -391,6 +391,190 @@
     flex-shrink: 0;
   }
 
+  /* ── Pup long-press popup ── */
+  .pup-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.72);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .pup-popup-overlay.open { display: flex; }
+  .pup-popup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 20px 18px;
+    width: min(88vw, 310px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .pup-popup-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: .04em;
+  }
+  .pup-popup-undo {
+    background: #162416;
+    color: #4ade80;
+    border: 1px solid #4ade8033;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pup-popup-section-label {
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-align: center;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .pup-popup-stepper-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pup-popup-step {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .pup-popup-step:active { background: var(--border); }
+  .pup-popup-adjust-val {
+    flex: 1;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .pup-popup-save {
+    background: #141e33;
+    color: #60a5fa;
+    border: 1px solid #60a5fa33;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pup-popup-cancel {
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: center;
+    padding: 2px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Pup history overlay ── */
+  .pup-history-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 90;
+    flex-direction: column;
+    padding: 28px 20px 20px;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  .pup-history-overlay.open { display: flex; }
+  .pup-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .pup-history-title { font-size: 1.2rem; font-weight: 700; }
+  .pup-history-close {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--dim);
+    font-size: 0.95rem;
+    padding: 6px 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pup-hist-btn {
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pup-history-dog {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .pup-history-dog-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .pup-history-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .pup-history-stat { display: flex; flex-direction: column; gap: 2px; }
+  .pup-history-stat-label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; }
+  .pup-history-stat-value { font-size: 1.15rem; font-weight: 700; }
+  .pup-history-log {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .pup-history-day {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: .04em;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .pup-history-day:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .pup-history-event {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+  .pup-history-event-time { color: var(--dim); font-variant-numeric: tabular-nums; min-width: 42px; }
+  .pup-history-event-type { font-weight: 600; }
+
   /* ── Mobile (iPhone etc — Pi kiosk viewport is ~533px so this won't trigger there) ── */
   @media (max-width: 480px) {
     html, body { overflow: auto; height: auto; }
@@ -535,11 +719,11 @@
   <div class="pup-card" id="pupSamwise">
     <div class="pup-name">🐾 Samwise</div>
     <div class="pup-btns">
-      <div class="pup-btn" onclick="pupLog('sam','pee')">
+      <div class="pup-btn" data-dog="sam" data-type="pee">
         <span class="pup-btn-label">💦 Pee</span>
         <span class="pup-btn-value" id="samPee">—</span>
       </div>
-      <div class="pup-btn" onclick="pupLog('sam','poop')">
+      <div class="pup-btn" data-dog="sam" data-type="poop">
         <span class="pup-btn-label">💦💩 Both</span>
         <span class="pup-btn-value" id="samPoop">—</span>
       </div>
@@ -549,11 +733,11 @@
   <div class="pup-card" id="pupQuentin">
     <div class="pup-name">🐾 Quentin</div>
     <div class="pup-btns">
-      <div class="pup-btn" onclick="pupLog('quentin','pee')">
+      <div class="pup-btn" data-dog="quentin" data-type="pee">
         <span class="pup-btn-label">💦 Pee</span>
         <span class="pup-btn-value" id="quentinPee">—</span>
       </div>
-      <div class="pup-btn" onclick="pupLog('quentin','poop')">
+      <div class="pup-btn" data-dog="quentin" data-type="poop">
         <span class="pup-btn-label">💦💩 Both</span>
         <span class="pup-btn-value" id="quentinPoop">—</span>
       </div>
@@ -561,12 +745,42 @@
   </div>
 </div>
 
+<!-- Long-press popup -->
+<div class="pup-popup-overlay" id="pupPopupOverlay">
+  <div class="pup-popup">
+    <div class="pup-popup-title" id="pupPopupTitle">🐾</div>
+    <div class="pup-popup-undo" id="pupPopupUndo" style="display:none" onclick="doPupUndo()">⏪ Undo</div>
+    <div class="pup-popup-section-label">log as happening…</div>
+    <div class="pup-popup-stepper-row">
+      <div class="pup-popup-step" onclick="adjustMins(-5)">−5m</div>
+      <div class="pup-popup-step" onclick="adjustMins(-1)">−1m</div>
+      <div class="pup-popup-adjust-val" id="pupPopupVal">just now</div>
+      <div class="pup-popup-step" onclick="adjustMins(+1)">+1m</div>
+      <div class="pup-popup-step" onclick="adjustMins(+5)">+5m</div>
+    </div>
+    <div class="pup-popup-save" onclick="doPupSaveAdjusted()">Save</div>
+    <div class="pup-popup-cancel" onclick="closePupPopup()">Cancel</div>
+  </div>
+</div>
+
+<!-- History overlay -->
+<div class="pup-history-overlay" id="pupHistoryOverlay">
+  <div class="pup-history-header">
+    <div class="pup-history-title">🐾 Pup Log</div>
+    <button class="pup-history-close" onclick="closePupHistory()">✕ Close</button>
+  </div>
+  <div id="pupHistoryContent"></div>
+</div>
+
 <div class="footer">
   <div class="footer-left">
     <span class="status-dot" id="statusDot"></span>
     <span id="statusText">Loading…</span>
   </div>
-  <div class="last-updated" id="lastUpdated"></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <button class="pup-hist-btn" onclick="openPupHistory()">📋 pup log</button>
+    <div class="last-updated" id="lastUpdated"></div>
+  </div>
 </div>
 
 <script>
@@ -829,19 +1043,56 @@ fetchCalendar();
 setInterval(fetchCalendar, 15 * 60 * 1000);
 
 // ── Pup tracker ───────────────────────────────────────────────────────────────
+// ── Pup state ────────────────────────────────────────────────────────────────
 const PUP_KEYS = {
   sam:     { pee: 'pup_sam_pee',     poop: 'pup_sam_poop'     },
   quentin: { pee: 'pup_quentin_pee', poop: 'pup_quentin_poop' },
 };
-const PEE_WARN  = 4 * 60;   // minutes
+const PEE_WARN  = 4 * 60;
 const PEE_LATE  = 6 * 60;
 const POOP_WARN = 12 * 60;
 const POOP_LATE = 18 * 60;
 
-function pupLog(dog, type) {
-  const now = Date.now();
-  localStorage.setItem(PUP_KEYS[dog].pee, now);
-  if (type === 'poop') localStorage.setItem(PUP_KEYS[dog].poop, now);
+// ── History ──────────────────────────────────────────────────────────────────
+const PUP_HISTORY_KEY = 'pup_history';
+const PUP_HISTORY_MAX = 1000;
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(PUP_HISTORY_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function saveHistory(h) {
+  if (h.length > PUP_HISTORY_MAX) h = h.slice(-PUP_HISTORY_MAX);
+  localStorage.setItem(PUP_HISTORY_KEY, JSON.stringify(h));
+}
+
+// ── In-memory undo state (clears on reload) ───────────────────────────────────
+const pupPrev = {};
+
+function pupLog(dog, type, ts) {
+  ts = ts || Date.now();
+  const key = `${dog}_${type}`;
+  // Save undo state before overwriting
+  pupPrev[key] = {
+    peeTs:    parseInt(localStorage.getItem(PUP_KEYS[dog].pee)  || '0', 10),
+    poopTs:   parseInt(localStorage.getItem(PUP_KEYS[dog].poop) || '0', 10),
+    eventIds: [],
+    loggedAt: Date.now(),
+  };
+  // Update current state
+  localStorage.setItem(PUP_KEYS[dog].pee, ts);
+  if (type === 'poop') localStorage.setItem(PUP_KEYS[dog].poop, ts);
+  // Append to history
+  const h = getHistory();
+  const peeId = `${ts}_${dog}_pee_${Math.random().toString(36).slice(2,6)}`;
+  h.push({ id: peeId, dog, type: 'pee', ts });
+  pupPrev[key].eventIds.push(peeId);
+  if (type === 'poop') {
+    const poopId = `${ts}_${dog}_poop_${Math.random().toString(36).slice(2,6)}`;
+    h.push({ id: poopId, dog, type: 'poop', ts });
+    pupPrev[key].eventIds.push(poopId);
+  }
+  saveHistory(h);
   renderPups();
   if (FIREBASE_URL) pupSyncPush();
 }
@@ -851,6 +1102,7 @@ function pupStateFromLocalStorage() {
   for (const [dog, keys] of Object.entries(PUP_KEYS))
     for (const type of ['pee','poop'])
       state[keys[type]] = parseInt(localStorage.getItem(keys[type]) || '0', 10);
+  state.history = getHistory();
   return state;
 }
 
@@ -871,7 +1123,7 @@ async function pupSyncPull() {
     if (!r.ok) return;
     const remote = await r.json();
     if (!remote) return;
-    // merge: keep the latest timestamp for each key
+    // Merge current state: keep latest timestamp per key
     for (const [dog, keys] of Object.entries(PUP_KEYS))
       for (const type of ['pee','poop']) {
         const k = keys[type];
@@ -879,12 +1131,22 @@ async function pupSyncPull() {
         const server = parseInt(remote[k] || '0', 10);
         if (server > local) localStorage.setItem(k, server);
       }
+    // Merge history: union by id
+    if (Array.isArray(remote.history) && remote.history.length) {
+      const h = getHistory();
+      const ids = new Set(h.map(e => e.id));
+      for (const evt of remote.history)
+        if (evt.id && !ids.has(evt.id)) { h.push(evt); ids.add(evt.id); }
+      h.sort((a,b) => a.ts - b.ts);
+      saveHistory(h);
+    }
     renderPups();
   } catch(e) { /* silently fail */ }
 }
 pupSyncPull();
 setInterval(pupSyncPull, 30_000);
 
+// ── Rendering ─────────────────────────────────────────────────────────────────
 function fmtElapsed(ms) {
   if (ms === null || ms === undefined) return '—';
   const mins = Math.floor(ms / 60000);
@@ -921,6 +1183,184 @@ function renderPups() {
 }
 renderPups();
 setInterval(renderPups, 60_000);
+
+// ── Long-press button wiring ──────────────────────────────────────────────────
+document.querySelectorAll('.pup-btn').forEach(btn => {
+  const dog  = btn.dataset.dog;
+  const type = btn.dataset.type;
+  let timer = null, didLongPress = false;
+
+  function startPress() {
+    didLongPress = false;
+    timer = setTimeout(() => { didLongPress = true; showPupPopup(dog, type); }, 500);
+  }
+  function endPress(e) {
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (!didLongPress) pupLog(dog, type);
+    didLongPress = false;
+  }
+  function cancelPress() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    didLongPress = false;
+  }
+
+  btn.addEventListener('touchstart',  startPress, { passive: true });
+  btn.addEventListener('touchend',    e => { e.preventDefault(); endPress(e); });
+  btn.addEventListener('touchcancel', cancelPress);
+  btn.addEventListener('touchmove',   cancelPress, { passive: true });
+  // Mouse fallback for non-touch devices
+  btn.addEventListener('mousedown',   startPress);
+  btn.addEventListener('mouseup',     endPress);
+  btn.addEventListener('mouseleave',  cancelPress);
+  btn.addEventListener('click',       e => e.preventDefault());
+});
+
+// ── Long-press popup ──────────────────────────────────────────────────────────
+let popupDog = null, popupType = null, popupMinsAgo = 0;
+
+function showPupPopup(dog, type) {
+  popupDog = dog; popupType = type; popupMinsAgo = 0;
+  const names = { sam: 'Samwise', quentin: 'Quentin' };
+  const label = type === 'pee' ? '💦 Pee' : '💦💩 Both';
+  document.getElementById('pupPopupTitle').textContent = `🐾 ${names[dog]} — ${label}`;
+  // Show undo only within 30s of last log
+  const prev = pupPrev[`${dog}_${type}`];
+  const undoEl = document.getElementById('pupPopupUndo');
+  if (prev && (Date.now() - prev.loggedAt) < 30000) {
+    const secs = Math.round((Date.now() - prev.loggedAt) / 1000);
+    undoEl.textContent = `⏪ Undo last log (${secs}s ago)`;
+    undoEl.style.display = '';
+  } else {
+    undoEl.style.display = 'none';
+  }
+  updatePopupVal();
+  document.getElementById('pupPopupOverlay').classList.add('open');
+}
+
+function adjustMins(delta) {
+  popupMinsAgo = Math.max(0, Math.min(240, popupMinsAgo + delta));
+  updatePopupVal();
+}
+
+function updatePopupVal() {
+  const el = document.getElementById('pupPopupVal');
+  if (popupMinsAgo === 0) el.textContent = 'just now';
+  else if (popupMinsAgo < 60) el.textContent = `${popupMinsAgo}m ago`;
+  else {
+    const h = Math.floor(popupMinsAgo / 60), m = popupMinsAgo % 60;
+    el.textContent = m ? `${h}h ${m}m ago` : `${h}h ago`;
+  }
+}
+
+function doPupUndo() {
+  const key = `${popupDog}_${popupType}`;
+  const prev = pupPrev[key];
+  if (!prev) return closePupPopup();
+  if (prev.peeTs)  localStorage.setItem(PUP_KEYS[popupDog].pee,  prev.peeTs);
+  else             localStorage.removeItem(PUP_KEYS[popupDog].pee);
+  if (popupType === 'poop') {
+    if (prev.poopTs) localStorage.setItem(PUP_KEYS[popupDog].poop, prev.poopTs);
+    else             localStorage.removeItem(PUP_KEYS[popupDog].poop);
+  }
+  saveHistory(getHistory().filter(e => !prev.eventIds.includes(e.id)));
+  delete pupPrev[key];
+  renderPups();
+  if (FIREBASE_URL) pupSyncPush();
+  closePupPopup();
+}
+
+function doPupSaveAdjusted() {
+  const ts = Date.now() - popupMinsAgo * 60000;
+  closePupPopup();
+  pupLog(popupDog, popupType, ts);
+}
+
+function closePupPopup() {
+  document.getElementById('pupPopupOverlay').classList.remove('open');
+  popupDog = popupType = null;
+}
+
+// Close popup on overlay background tap
+document.getElementById('pupPopupOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('pupPopupOverlay')) closePupPopup();
+});
+
+// ── History overlay ────────────────────────────────────────────────────────────
+function openPupHistory()  { renderPupHistory(); document.getElementById('pupHistoryOverlay').classList.add('open'); }
+function closePupHistory() { document.getElementById('pupHistoryOverlay').classList.remove('open'); }
+
+function computeAvgInterval(timestamps) {
+  if (timestamps.length < 2) return null;
+  let total = 0;
+  for (let i = 1; i < timestamps.length; i++) total += timestamps[i] - timestamps[i-1];
+  return fmtElapsed(total / (timestamps.length - 1));
+}
+
+function renderPupHistory() {
+  const h = getHistory();
+  const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const dogNames = { sam: 'Samwise', quentin: 'Quentin' };
+  let html = '';
+
+  for (const dog of ['sam', 'quentin']) {
+    const allPee  = h.filter(e => e.dog === dog && e.type === 'pee').sort((a,b) => a.ts - b.ts);
+    const allPoop = h.filter(e => e.dog === dog && e.type === 'poop').sort((a,b) => a.ts - b.ts);
+    const recent  = [...allPee, ...allPoop].filter(e => e.ts > cutoff).sort((a,b) => b.ts - a.ts);
+
+    const avgPee  = computeAvgInterval(allPee.map(e => e.ts))  || '—';
+    const avgPoop = computeAvgInterval(allPoop.map(e => e.ts)) || '—';
+    const peeCount14  = allPee.filter(e => e.ts > cutoff).length;
+    const poopCount14 = allPoop.filter(e => e.ts > cutoff).length;
+
+    // Build event log grouped by date
+    let logHtml = '';
+    if (recent.length === 0) {
+      logHtml = '<div style="color:var(--dim);font-size:.8rem">No events in last 14 days</div>';
+    } else {
+      let lastDate = '';
+      for (const e of recent) {
+        const d = new Date(e.ts);
+        const dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+        if (dateStr !== lastDate) {
+          logHtml += `<div class="pup-history-day">${dateStr}</div>`;
+          lastDate = dateStr;
+        }
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false });
+        const icon = e.type === 'pee' ? '💦' : '💩';
+        logHtml += `<div class="pup-history-event">
+          <span class="pup-history-event-time">${timeStr}</span>
+          <span class="pup-history-event-type">${icon} ${e.type}</span>
+        </div>`;
+      }
+    }
+
+    html += `<div class="pup-history-dog">
+      <div class="pup-history-dog-name">🐾 ${dogNames[dog]}</div>
+      <div class="pup-history-stats">
+        <div class="pup-history-stat">
+          <div class="pup-history-stat-label">Avg pee gap</div>
+          <div class="pup-history-stat-value">${avgPee}</div>
+        </div>
+        <div class="pup-history-stat">
+          <div class="pup-history-stat-label">Avg poop gap</div>
+          <div class="pup-history-stat-value">${avgPoop}</div>
+        </div>
+        <div class="pup-history-stat">
+          <div class="pup-history-stat-label">Pees (14d)</div>
+          <div class="pup-history-stat-value">${peeCount14}</div>
+        </div>
+        <div class="pup-history-stat">
+          <div class="pup-history-stat-label">Poops (14d)</div>
+          <div class="pup-history-stat-value">${poopCount14}</div>
+        </div>
+      </div>
+      <div class="pup-history-log">${logHtml}</div>
+    </div>`;
+  }
+
+  document.getElementById('pupHistoryContent').innerHTML = html ||
+    '<div style="color:var(--dim);text-align:center;padding:24px">No history yet — log some walks!</div>';
+}
 
 </script>
 </body>
