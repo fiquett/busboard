@@ -38,7 +38,7 @@
   body {
     display: flex;
     flex-direction: column;
-    padding: 36px 28px 24px;
+    padding: max(36px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
     gap: 16px;
   }
 
@@ -494,7 +494,7 @@
     background: var(--bg);
     z-index: 90;
     flex-direction: column;
-    padding: 28px 20px 20px;
+    padding: max(28px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
     gap: 14px;
     overflow-y: auto;
   }
