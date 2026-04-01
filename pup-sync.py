@@ -73,7 +73,7 @@ class Handler(BaseHTTPRequestHandler):
             # Falls back to largest-value for keys without a write time.
             write_keys = {k for k in body if k.endswith('_w')}
             for k, v in body.items():
-                if k in ('history',) or k.endswith('_w'):
+                if k in ('history', 'deleted_ids') or k.endswith('_w'):
                     continue
                 wk = k + '_w'
                 if wk in write_keys:
