@@ -69,12 +69,24 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get('Content-Length', 0))
         body = json.loads(self.rfile.read(length))
         with lock:
-            # merge current state: keep latest timestamp per key
+            # Merge current state: latest *write time* (_w keys) wins.
+            # Falls back to largest-value for keys without a write time.
+            write_keys = {k for k in body if k.endswith('_w')}
             for k, v in body.items():
-                if k == 'history':
+                if k in ('history',) or k.endswith('_w'):
                     continue
-                if int(v or 0) > int(state.get(k) or 0):
-                    state[k] = v
+                wk = k + '_w'
+                if wk in write_keys:
+                    # Use write-time semantics: newer write wins
+                    new_w = int(body.get(wk) or 0)
+                    cur_w = int(state.get(wk) or 0)
+                    if new_w > cur_w:
+                        state[k]  = v
+                        state[wk] = new_w
+                else:
+                    # Fallback: largest value wins (backward compat)
+                    if int(v or 0) > int(state.get(k) or 0):
+                        state[k] = v
             # merge history: union by event id, keep newest 1000
             remote_history = body.get('history', [])
             local_history = state.get('history', [])

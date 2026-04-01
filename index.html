@@ -1048,6 +1048,12 @@ const PUP_KEYS = {
   sam:     { pee: 'pup_sam_pee',     poop: 'pup_sam_poop'     },
   quentin: { pee: 'pup_quentin_pee', poop: 'pup_quentin_poop' },
 };
+// Write-time keys — track when each value was last intentionally set.
+// Allows undo to win over server even though server has a newer value.
+const PUP_WRITE_KEYS = {
+  sam:     { pee: 'pup_sam_pee_w',     poop: 'pup_sam_poop_w'     },
+  quentin: { pee: 'pup_quentin_pee_w', poop: 'pup_quentin_poop_w' },
+};
 const PEE_WARN  = 4 * 60;
 const PEE_LATE  = 6 * 60;
 const POOP_WARN = 12 * 60;
@@ -1079,9 +1085,14 @@ function pupLog(dog, type, ts) {
     eventIds: [],
     loggedAt: Date.now(),
   };
-  // Update current state
-  localStorage.setItem(PUP_KEYS[dog].pee, ts);
-  if (type === 'poop') localStorage.setItem(PUP_KEYS[dog].poop, ts);
+  // Update current state (and write time so undo can win on sync)
+  const writeNow = Date.now();
+  localStorage.setItem(PUP_KEYS[dog].pee,       ts);
+  localStorage.setItem(PUP_WRITE_KEYS[dog].pee,  writeNow);
+  if (type === 'poop') {
+    localStorage.setItem(PUP_KEYS[dog].poop,      ts);
+    localStorage.setItem(PUP_WRITE_KEYS[dog].poop, writeNow);
+  }
   // Append to history
   const h = getHistory();
   const peeId = `${ts}_${dog}_pee_${Math.random().toString(36).slice(2,6)}`;
@@ -1100,8 +1111,11 @@ function pupLog(dog, type, ts) {
 function pupStateFromLocalStorage() {
   const state = {};
   for (const [dog, keys] of Object.entries(PUP_KEYS))
-    for (const type of ['pee','poop'])
+    for (const type of ['pee','poop']) {
       state[keys[type]] = parseInt(localStorage.getItem(keys[type]) || '0', 10);
+      const wk = PUP_WRITE_KEYS[dog][type];
+      state[wk] = parseInt(localStorage.getItem(wk) || '0', 10);
+    }
   state.history = getHistory();
   return state;
 }
@@ -1123,13 +1137,20 @@ async function pupSyncPull() {
     if (!r.ok) return;
     const remote = await r.json();
     if (!remote) return;
-    // Merge current state: keep latest timestamp per key
+    // Merge current state: latest *write time* wins (not latest value).
+    // This lets undo propagate even though the undone value has a smaller ts.
     for (const [dog, keys] of Object.entries(PUP_KEYS))
       for (const type of ['pee','poop']) {
-        const k = keys[type];
-        const local  = parseInt(localStorage.getItem(k) || '0', 10);
-        const server = parseInt(remote[k] || '0', 10);
-        if (server > local) localStorage.setItem(k, server);
+        const k  = keys[type];
+        const wk = PUP_WRITE_KEYS[dog][type];
+        const localWrite  = parseInt(localStorage.getItem(wk)  || '0', 10);
+        const serverWrite = parseInt(remote[wk] || '0', 10);
+        if (serverWrite > localWrite) {
+          // Server write is newer — accept server value
+          localStorage.setItem(k,  remote[k]  || '0');
+          localStorage.setItem(wk, serverWrite);
+        }
+        // else: local write is same age or newer — keep local (undo wins)
       }
     // Merge history: union by id
     if (Array.isArray(remote.history) && remote.history.length) {
@@ -1238,7 +1259,7 @@ function showPupPopup(dog, type) {
 }
 
 function adjustMins(delta) {
-  popupMinsAgo = Math.max(0, Math.min(240, popupMinsAgo + delta));
+  popupMinsAgo = Math.max(0, Math.min(720, popupMinsAgo + delta));
   updatePopupVal();
 }
 
@@ -1253,26 +1274,33 @@ function updatePopupVal() {
 }
 
 function doPupUndo() {
-  const key = `${popupDog}_${popupType}`;
+  const dog = popupDog, type = popupType;
+  closePupPopup();
+  const key = `${dog}_${type}`;
   const prev = pupPrev[key];
-  if (!prev) return closePupPopup();
-  if (prev.peeTs)  localStorage.setItem(PUP_KEYS[popupDog].pee,  prev.peeTs);
-  else             localStorage.removeItem(PUP_KEYS[popupDog].pee);
-  if (popupType === 'poop') {
-    if (prev.poopTs) localStorage.setItem(PUP_KEYS[popupDog].poop, prev.poopTs);
-    else             localStorage.removeItem(PUP_KEYS[popupDog].poop);
+  if (!prev) return;
+  const writeNow = Date.now();
+  // Restore pee
+  if (prev.peeTs) localStorage.setItem(PUP_KEYS[dog].pee, prev.peeTs);
+  else            localStorage.removeItem(PUP_KEYS[dog].pee);
+  localStorage.setItem(PUP_WRITE_KEYS[dog].pee, writeNow);
+  // Restore poop (if this was a poop button press)
+  if (type === 'poop') {
+    if (prev.poopTs) localStorage.setItem(PUP_KEYS[dog].poop, prev.poopTs);
+    else             localStorage.removeItem(PUP_KEYS[dog].poop);
+    localStorage.setItem(PUP_WRITE_KEYS[dog].poop, writeNow);
   }
   saveHistory(getHistory().filter(e => !prev.eventIds.includes(e.id)));
   delete pupPrev[key];
   renderPups();
   if (FIREBASE_URL) pupSyncPush();
-  closePupPopup();
 }
 
 function doPupSaveAdjusted() {
+  const dog = popupDog, type = popupType;
   const ts = Date.now() - popupMinsAgo * 60000;
   closePupPopup();
-  pupLog(popupDog, popupType, ts);
+  pupLog(dog, type, ts);
 }
 
 function closePupPopup() {
