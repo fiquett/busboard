@@ -1152,12 +1152,18 @@ async function pupSyncPull() {
         }
         // else: local write is same age or newer — keep local (undo wins)
       }
-    // Merge history: union by id
-    if (Array.isArray(remote.history) && remote.history.length) {
+    // Apply deleted_ids: remove any locally stored events the server has marked deleted
+    if (Array.isArray(remote.deleted_ids) && remote.deleted_ids.length) {
+      const del = new Set(remote.deleted_ids);
+      saveHistory(getHistory().filter(e => !del.has(e.id)));
+    }
+    // Merge history: union by id (excluding deleted)
+    if (Array.isArray(remote.history)) {
+      const del = new Set(remote.deleted_ids || []);
       const h = getHistory();
       const ids = new Set(h.map(e => e.id));
       for (const evt of remote.history)
-        if (evt.id && !ids.has(evt.id)) { h.push(evt); ids.add(evt.id); }
+        if (evt.id && !ids.has(evt.id) && !del.has(evt.id)) { h.push(evt); ids.add(evt.id); }
       h.sort((a,b) => a.ts - b.ts);
       saveHistory(h);
     }

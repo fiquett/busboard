@@ -87,7 +87,11 @@ class Handler(BaseHTTPRequestHandler):
                     # Fallback: largest value wins (backward compat)
                     if int(v or 0) > int(state.get(k) or 0):
                         state[k] = v
-            # merge history: union by event id, keep newest 1000
+            # merge deleted_ids: union (events marked deleted propagate to all clients)
+            deleted = set(state.get('deleted_ids', []))
+            deleted.update(body.get('deleted_ids', []))
+            state['deleted_ids'] = list(deleted)
+            # merge history: union by event id, excluding deleted, keep newest 1000
             remote_history = body.get('history', [])
             local_history = state.get('history', [])
             ids_seen = {e['id'] for e in local_history if e.get('id')}
@@ -95,6 +99,7 @@ class Handler(BaseHTTPRequestHandler):
                 if event.get('id') and event['id'] not in ids_seen:
                     local_history.append(event)
                     ids_seen.add(event['id'])
+            local_history = [e for e in local_history if e.get('id') not in deleted]
             local_history.sort(key=lambda e: e.get('ts', 0))
             state['history'] = local_history[-1000:]
             save()
