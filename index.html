@@ -803,8 +803,7 @@ const REFRESH_MS = 30_000;
 // Make the calendar public, then: Google Calendar → Settings → [calendar] → Integrate → Public address in iCal format
 // Use a CORS proxy or a Google Calendar API key approach.
 // Leave empty to hide the calendar section.
-const GCAL_API_KEY     = 'AIzaSyDNRa4mVWKWFEtvrJ2h4pLQ0mEP_FgsAxM';
-const GCAL_CALENDAR_ID = 'c_4a337d01d4ef1946b524f5dc7b0373630d3dea059db5efb74d877b4720ac5280@group.calendar.google.com';
+const GCAL_PROXY = '/gcal'; // key + calendar ID injected server-side
 
 // ── Clock + Date ──────────────────────────────────────────────────────────────
 const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1012,12 +1011,12 @@ setInterval(fetchWeather, 10 * 60 * 1000);
 
 // ── Calendar ──────────────────────────────────────────────────────────────────
 async function fetchCalendar() {
-  if (!GCAL_API_KEY || !GCAL_CALENDAR_ID) return;
+  if (!GCAL_PROXY) return;
   try {
     const now    = new Date().toISOString();
     const dayEnd = new Date(); dayEnd.setHours(23, 59, 59);
-    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GCAL_CALENDAR_ID)}/events`
-      + `?key=${GCAL_API_KEY}&timeMin=${now}&timeMax=${dayEnd.toISOString()}`
+    const url = GCAL_PROXY
+      + `?timeMin=${now}&timeMax=${dayEnd.toISOString()}`
       + `&maxResults=4&orderBy=startTime&singleEvents=true`;
     const r = await fetch(url);
     const d = await r.json();

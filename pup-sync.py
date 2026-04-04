@@ -50,16 +50,49 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path != '/pups':
-            self.send_response(404); self.end_headers(); return
-        if not self._authorized():
-            self.send_response(401); self.end_headers(); return
-        body = json.dumps(state).encode()
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self._cors()
-        self.end_headers()
-        self.wfile.write(body)
+        if self.path == '/pups':
+            if not self._authorized():
+                self.send_response(401); self.end_headers(); return
+            body = json.dumps(state).encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._cors()
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path.startswith('/gcal'):
+            self._handle_gcal()
+        else:
+            self.send_response(404); self.end_headers()
+
+    def _handle_gcal(self):
+        import urllib.request as _req
+        from urllib.parse import urlparse, parse_qs, urlencode, quote
+        gcal_key = os.environ.get('GCAL_API_KEY', '')
+        gcal_id  = os.environ.get('GCAL_CALENDAR_ID', '')
+        if not gcal_key or not gcal_id:
+            self.send_response(503)
+            self._cors()
+            self.end_headers()
+            self.wfile.write(b'{"error":"Calendar not configured"}')
+            return
+        parsed = urlparse(self.path)
+        params = {k: v[0] for k, v in parse_qs(parsed.query, keep_blank_values=True).items()}
+        params['key'] = gcal_key
+        url = (f'https://www.googleapis.com/calendar/v3/calendars/'
+               f'{quote(gcal_id, safe="")}/events?{urlencode(params)}')
+        try:
+            with _req.urlopen(url, timeout=10) as r:
+                body = r.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self._cors()
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as e:
+            self.send_response(502)
+            self._cors()
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode())
 
     def do_POST(self):
         if self.path != '/pups':
