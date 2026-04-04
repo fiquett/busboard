@@ -142,4 +142,4 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(state).encode())
 
-HTTPServer(('0.0.0.0', 8765), Handler).serve_forever()
+HTTPServer(('127.0.0.1', 8765), Handler).serve_forever()
