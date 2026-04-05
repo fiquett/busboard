@@ -784,6 +784,25 @@
 </div>
 
 <script>
+// ── Auth gate ─────────────────────────────────────────────────────────────────
+(function hearthAuth() {
+  const t = localStorage.getItem('hearth_token');
+  if (!t) { window.location.replace('/login.html'); return; }
+  try {
+    const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    if (p.exp * 1000 < Date.now()) {
+      localStorage.removeItem('hearth_token');
+      window.location.replace('/login.html');
+      return;
+    }
+    if (p.role === 'kiosk_pending') {
+      window.location.replace('/login.html');
+      return;
+    }
+    window._hearthJWT = p;
+  } catch(e) { localStorage.removeItem('hearth_token'); window.location.replace('/login.html'); }
+})();
+
 // ── Config ────────────────────────────────────────────────────────────────────
 // Pup sync: pup state is synced via the self-hosted endpoint on blueumbrella K8s.
 // Served as a sidecar at hearth.fiquett.com/pups — no external service needed.

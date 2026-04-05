@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>hearth — activate display</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0c10;
+      color: #e2e8f0;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: max(28px, env(safe-area-inset-top))
+               max(20px, env(safe-area-inset-right))
+               max(28px, env(safe-area-inset-bottom))
+               max(20px, env(safe-area-inset-left));
+    }
+    .card {
+      background: #12161e;
+      border: 1px solid #1e2530;
+      border-radius: 24px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 { font-size: 24px; font-weight: 700; color: #f59e0b; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: #475569; margin-bottom: 32px; line-height: 1.5; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    input {
+      width: 100%;
+      background: #0a0c10;
+      border: 1px solid #1e2530;
+      border-radius: 12px;
+      color: #e2e8f0;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 20px;
+    }
+    input:focus { border-color: #f59e0b; }
+    .code-input {
+      font-size: 28px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      letter-spacing: 6px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .name-input { font-size: 15px; }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: #f59e0b;
+      color: #0a0c10;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn:hover { background: #fbbf24; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .error   { color: #f87171; font-size: 13px; margin-top: 12px; text-align: center; min-height: 18px; }
+    .success { color: #4ade80; font-size: 14px; margin-top: 16px; text-align: center; line-height: 1.5; }
+    .need-login {
+      background: #0f1620;
+      border: 1px solid #1e2530;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .need-login p { font-size: 14px; color: #94a3b8; margin-bottom: 16px; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1f2a;
+      color: #e2e8f0;
+      border: 1px solid #2a3340;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #1e2530; }
+    .back { display: block; text-align: center; margin-top: 24px;
+            color: #334155; font-size: 13px; text-decoration: none; }
+    .back:hover { color: #64748b; }
+    /* Device list */
+    .devices { margin-top: 36px; }
+    .devices h2 { font-size: 14px; font-weight: 600; color: #475569;
+                  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+    .device-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #0a0c10;
+      border-radius: 10px;
+      border: 1px solid #1e2530;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+    .device-info { flex: 1; min-width: 0; }
+    .device-label { font-size: 14px; font-weight: 500; color: #cbd5e1;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .device-meta  { font-size: 11px; color: #475569; margin-top: 2px; }
+    .revoke-btn {
+      background: none;
+      border: 1px solid #3f1f1f;
+      border-radius: 8px;
+      color: #f87171;
+      font-size: 12px;
+      padding: 5px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .revoke-btn:hover { background: #2a1010; }
+    .badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .badge-kiosk  { background: #1a2a3a; color: #60a5fa; }
+    .badge-phone  { background: #1a2a1a; color: #4ade80; }
+    .badge-revoked{ background: #2a1a1a; color: #f87171; }
+    @media (max-width: 440px) {
+      .card { padding: 32px 20px; border-radius: 0; border-left: none; border-right: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>Activate Display</h1>
+  <div class="sub">Enter the code shown on your kiosk to link it to your hearth account.</div>
+
+  <div id="needLogin" style="display:none">
+    <div class="need-login">
+      <p>Sign in first to activate a display.</p>
+      <a class="btn-secondary" href="/auth/google">
+        <svg width="16" height="16" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </a>
+    </div>
+  </div>
+
+  <div id="form">
+    <label>Activation code</label>
+    <input id="codeInput" class="code-input" type="text" maxlength="7"
+           placeholder="ABC-123" autocomplete="off" spellcheck="false"
+           oninput="formatCode(this)" onkeydown="if(event.key==='Enter')doActivate()">
+
+    <label>Name this display</label>
+    <input id="labelInput" class="name-input" type="text"
+           placeholder="Living Room Pi 5" maxlength="40"
+           onkeydown="if(event.key==='Enter')doActivate()">
+
+    <button class="btn" id="activateBtn" onclick="doActivate()">Activate Display</button>
+    <div class="error" id="errorMsg"></div>
+    <div class="success" id="successMsg"></div>
+  </div>
+
+  <div class="devices" id="deviceList" style="display:none">
+    <h2>Your Devices</h2>
+    <div id="deviceRows"></div>
+  </div>
+
+  <a href="/" class="back">← back to hearth</a>
+</div>
+
+<script>
+function getToken() { return localStorage.getItem('hearth_token'); }
+
+function jwtPayload(t) {
+  try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+  catch(e) { return null; }
+}
+
+function isLoggedIn() {
+  const t = getToken();
+  if (!t) return false;
+  const p = jwtPayload(t);
+  return p && p.exp * 1000 > Date.now() && p.account_id;
+}
+
+function isAdmin() {
+  const t = getToken();
+  if (!t) return false;
+  const p = jwtPayload(t);
+  return p && p.role === 'admin';
+}
+
+function formatCode(input) {
+  let v = input.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if (v.length > 3) v = v.slice(0,3) + '-' + v.slice(3,6);
+  input.value = v;
+}
+
+async function doActivate() {
+  const code  = document.getElementById('codeInput').value.trim().toUpperCase();
+  const label = document.getElementById('labelInput').value.trim() || 'Kiosk Display';
+  document.getElementById('errorMsg').textContent = '';
+  if (code.length < 7) {
+    document.getElementById('errorMsg').textContent = 'Enter the full 6-character code (e.g. ABC-123)';
+    return;
+  }
+  document.getElementById('activateBtn').disabled = true;
+  try {
+    const res  = await fetch('/api/activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+                 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ code, label })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById('errorMsg').textContent = data.error || 'Activation failed';
+      document.getElementById('activateBtn').disabled = false;
+    } else {
+      document.getElementById('successMsg').innerHTML =
+        `✓ <strong>${label}</strong> activated!<br>The display will reload automatically.`;
+      document.getElementById('form').style.opacity = '0.5';
+      loadDevices();
+    }
+  } catch(e) {
+    document.getElementById('errorMsg').textContent = 'Network error — try again';
+    document.getElementById('activateBtn').disabled = false;
+  }
+}
+
+async function revokeDevice(id, label) {
+  if (!confirm(`Revoke access for "${label}"? It will need to be re-activated.`)) return;
+  await fetch('/api/revoke/' + id, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getToken() }
+  });
+  loadDevices();
+}
+
+async function loadDevices() {
+  if (!isAdmin()) return;
+  try {
+    const res  = await fetch('/api/devices', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    const list = await res.json();
+    const container = document.getElementById('deviceRows');
+    container.innerHTML = '';
+    document.getElementById('deviceList').style.display = 'block';
+    list.forEach(d => {
+      const lastSeen = d.last_seen
+        ? 'last seen ' + new Date(d.last_seen * 1000).toLocaleDateString()
+        : 'never seen';
+      const badgeClass = d.revoked ? 'badge-revoked'
+                       : d.device_type === 'kiosk' ? 'badge-kiosk' : 'badge-phone';
+      const badgeLabel = d.revoked ? 'revoked' : d.device_type;
+      const row = document.createElement('div');
+      row.className = 'device-row';
+      row.innerHTML = `
+        <div class="device-info">
+          <div class="device-label">${esc(d.label)}</div>
+          <div class="device-meta">${esc(d.account_email || 'unactivated')} · ${lastSeen}</div>
+        </div>
+        <span class="badge ${badgeClass}">${badgeLabel}</span>
+        ${!d.revoked ? `<button class="revoke-btn" onclick="revokeDevice('${d.id}','${esc(d.label)}')">Revoke</button>` : ''}
+      `;
+      container.appendChild(row);
+    });
+  } catch(e) {}
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  if (!isLoggedIn()) {
+    document.getElementById('needLogin').style.display = 'block';
+    document.getElementById('form').style.display = 'none';
+  } else {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('code')) document.getElementById('codeInput').value = params.get('code');
+    loadDevices();
+  }
+});
+</script>
+</body>
+</html>
