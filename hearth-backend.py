@@ -229,14 +229,18 @@ def gcal():
 
 # ── Google OAuth ───────────────────────────────────────────────────────────────
 # Simple in-memory state store (single instance, fine for personal use)
-_oauth_states: dict[str, float] = {}
+_oauth_states: dict[str, dict] = {}  # state -> {expiry, return_to}
 
 @app.route('/auth/google')
 def google_auth():
     state = secrets.token_urlsafe(16)
-    _oauth_states[state] = time.time() + 600  # 10-min expiry
+    return_to = request.args.get('return_to', '/')
+    # Restrict return_to to safe relative paths
+    if not return_to.startswith('/') or '//' in return_to:
+        return_to = '/'
+    _oauth_states[state] = {'expiry': time.time() + 600, 'return_to': return_to}
     # Clean up old states
-    expired = [k for k, v in _oauth_states.items() if v < time.time()]
+    expired = [k for k, v in _oauth_states.items() if v['expiry'] < time.time()]
     for k in expired:
         del _oauth_states[k]
     params = {
@@ -252,9 +256,10 @@ def google_auth():
 @app.route('/auth/google/callback')
 def google_callback():
     state = request.args.get('state', '')
-    expiry = _oauth_states.pop(state, 0)
-    if expiry < time.time():
+    state_data = _oauth_states.pop(state, None)
+    if not state_data or state_data['expiry'] < time.time():
         return 'Invalid or expired state', 400
+    return_to = state_data.get('return_to', '/')
     code = request.args.get('code')
     if not code:
         return 'Missing authorization code', 400
@@ -353,7 +358,7 @@ a{color:#f59e0b;text-decoration:none}</style></head>
 <script>
 try{{localStorage.setItem('hearth_token',{json.dumps(token)});}}catch(e){{}}
 try{{localStorage.setItem('hearth_user',{json.dumps(user_json)});}}catch(e){{}}
-window.location.replace('/');
+window.location.replace({json.dumps(return_to)});
 </script></body></html>'''
 
 # ── Device registration ────────────────────────────────────────────────────────

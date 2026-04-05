@@ -6,6 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>hearth</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -83,21 +84,21 @@
     /* Kiosk setup */
     #kiosk { display: none; }
     .code-box {
-      font-size: 40px;
+      font-size: 28px;
       font-weight: 700;
-      letter-spacing: 8px;
+      letter-spacing: 6px;
       color: #f59e0b;
       font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      padding: 24px 16px;
-      background: #0a0c10;
-      border-radius: 14px;
-      border: 1px solid #2a3340;
-      margin: 16px 0;
-      min-height: 88px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: 8px 0 0;
     }
+    #qrBox {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      display: inline-block;
+      margin: 16px 0 8px;
+    }
+    #qrBox canvas, #qrBox img { display: block; }
     .hint {
       font-size: 13px;
       color: #475569;
@@ -163,12 +164,12 @@
   </div>
 
   <div id="kiosk">
-    <div class="hint">
-      On your phone, go to<br>
-      <strong>hearth.fiquett.com/activate</strong><br>
-      and enter this code:
-    </div>
+    <div class="hint">Scan to activate on your phone:</div>
+    <div id="qrBox"><canvas id="qrCanvas"></canvas></div>
     <div class="code-box" id="code">···-···</div>
+    <div class="hint" style="margin-top:8px;font-size:12px">
+      or go to <strong>hearth.fiquett.com/activate</strong>
+    </div>
     <div class="status waiting" id="status">Waiting for activation</div>
     <button class="back" onclick="cancelKiosk()">← back</button>
   </div>
@@ -193,6 +194,7 @@ async function setupKiosk() {
   startPolling();
 }
 
+let _qr = null;
 async function refreshCode() {
   try {
     const res  = await fetch('/api/invite', {
@@ -201,6 +203,13 @@ async function refreshCode() {
     });
     const data = await res.json();
     document.getElementById('code').textContent = data.code;
+    // Render QR code
+    const url = `https://hearth.fiquett.com/activate?code=${encodeURIComponent(data.code)}`;
+    const box = document.getElementById('qrBox');
+    box.innerHTML = '';
+    new QRCode(box, { text: url, width: 180, height: 180,
+                      colorDark: '#000000', colorLight: '#ffffff',
+                      correctLevel: QRCode.CorrectLevel.M });
     // Refresh 30s before expiry
     clearTimeout(_refreshTimer);
     _refreshTimer = setTimeout(refreshCode, Math.max(0, (data.expires_in - 30) * 1000));
