@@ -204,7 +204,7 @@ async function refreshCode() {
     const data = await res.json();
     document.getElementById('code').textContent = data.code;
     // Render QR code
-    const url = `https://hearth.fiquett.com/activate?code=${encodeURIComponent(data.code)}`;
+    const url = `https://hearth.fiquett.com/activate.html?code=${encodeURIComponent(data.code)}`;
     const box = document.getElementById('qrBox');
     box.innerHTML = '';
     new QRCode(box, { text: url, width: 180, height: 180,
