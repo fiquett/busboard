@@ -251,13 +251,13 @@ function cancelKiosk() {
   document.getElementById('status').textContent = 'Waiting for activation';
 }
 
-// Already logged in?
+// Already logged in? (skip kiosk_pending — needs activation first)
 (function () {
   const t = localStorage.getItem('hearth_token');
   if (!t) return;
   try {
     const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-    if (p.exp * 1000 > Date.now()) window.location.replace('/');
+    if (p.exp * 1000 > Date.now() && p.role !== 'kiosk_pending') window.location.replace('/');
   } catch (e) { localStorage.removeItem('hearth_token'); }
 })();
 </script>
