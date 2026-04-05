@@ -184,7 +184,19 @@ async function setupKiosk() {
   document.getElementById('login').style.display = 'none';
   document.getElementById('kiosk').style.display  = 'block';
 
-  // Register an unactivated device
+  // Reuse existing kiosk_pending token, or register a new device
+  const existing = localStorage.getItem('hearth_token');
+  if (existing) {
+    try {
+      const p = JSON.parse(atob(existing.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if (p.role === 'kiosk_pending' && p.exp * 1000 > Date.now()) {
+        _deviceToken = existing;
+        await refreshCode();
+        startPolling();
+        return;
+      }
+    } catch(e) {}
+  }
   const res  = await fetch('/api/device/register', { method: 'POST' });
   const data = await res.json();
   _deviceToken = data.token;
