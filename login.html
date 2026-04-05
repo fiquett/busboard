@@ -225,6 +225,14 @@ function startPolling() {
       const res  = await fetch('/api/device', {
         headers: { 'Authorization': 'Bearer ' + _deviceToken }
       });
+      if (res.status === 401) {
+        // Stale token — re-register cleanly
+        clearInterval(_pollTimer);
+        clearTimeout(_refreshTimer);
+        localStorage.removeItem('hearth_token');
+        await setupKiosk();
+        return;
+      }
       const data = await res.json();
       if (data.activated) {
         clearInterval(_pollTimer);
