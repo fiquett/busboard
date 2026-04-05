@@ -185,6 +185,18 @@
     <div id="deviceRows"></div>
   </div>
 
+  <div class="devices" id="allowlistSection" style="display:none">
+    <h2>Allowed Users</h2>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input id="newEmail" class="name-input" type="email" placeholder="friend@gmail.com"
+             style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')addEmail()">
+      <button onclick="addEmail()" style="padding:12px 16px;background:#f59e0b;color:#0a0c10;
+              border:none;border-radius:10px;font-weight:700;cursor:pointer;white-space:nowrap">Add</button>
+    </div>
+    <div class="error" id="emailError"></div>
+    <div id="allowlistRows"></div>
+  </div>
+
   <a href="/" class="back">← back to hearth</a>
 </div>
 
@@ -257,6 +269,58 @@ async function revokeDevice(id, label) {
   loadDevices();
 }
 
+async function addEmail() {
+  const email = document.getElementById('newEmail').value.trim().toLowerCase();
+  document.getElementById('emailError').textContent = '';
+  if (!email || !email.includes('@')) {
+    document.getElementById('emailError').textContent = 'Enter a valid email';
+    return;
+  }
+  const res = await fetch('/api/allowed', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+    body: JSON.stringify({ email })
+  });
+  if (res.ok) {
+    document.getElementById('newEmail').value = '';
+    loadAllowlist();
+  } else {
+    const d = await res.json();
+    document.getElementById('emailError').textContent = d.error || 'Failed';
+  }
+}
+
+async function removeEmail(email) {
+  await fetch('/api/allowed/' + encodeURIComponent(email), {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + getToken() }
+  });
+  loadAllowlist();
+}
+
+async function loadAllowlist() {
+  if (!isAdmin()) return;
+  document.getElementById('allowlistSection').style.display = 'block';
+  try {
+    const res  = await fetch('/api/allowed', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    const list = await res.json();
+    const container = document.getElementById('allowlistRows');
+    container.innerHTML = '';
+    list.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'device-row';
+      row.innerHTML = `
+        <div class="device-info">
+          <div class="device-label">${esc(e.email)}</div>
+          <div class="device-meta">added ${e.added_by === 'env' ? 'from config' : 'manually'}</div>
+        </div>
+        <button class="revoke-btn" onclick="removeEmail('${esc(e.email)}')">Remove</button>
+      `;
+      container.appendChild(row);
+    });
+  } catch(e) {}
+}
+
 async function loadDevices() {
   if (!isAdmin()) return;
   try {
@@ -302,6 +366,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('code')) document.getElementById('codeInput').value = params.get('code');
     loadDevices();
+    loadAllowlist();
   }
 });
 </script>

@@ -97,7 +97,18 @@ def init_db():
             expires_at  INTEGER,
             used        INTEGER DEFAULT 0
         );
+        CREATE TABLE IF NOT EXISTS allowed_emails (
+            email       TEXT PRIMARY KEY,
+            added_by    TEXT,
+            added_at    INTEGER
+        );
     ''')
+    # Seed from env var on first run (only if table is empty)
+    count = db.execute('SELECT COUNT(*) FROM allowed_emails').fetchone()[0]
+    if count == 0 and ALLOWED_EMAILS:
+        for email in ALLOWED_EMAILS:
+            db.execute('INSERT OR IGNORE INTO allowed_emails (email, added_by, added_at) VALUES (?,?,?)',
+                       (email, 'env', int(time.time())))
     db.commit()
     db.close()
 
@@ -279,19 +290,24 @@ def google_callback():
     name       = claims.get('name', email)
     picture    = claims.get('picture', '')
 
-    if ALLOWED_EMAILS and email.lower() not in ALLOWED_EMAILS:
-        return '''<!DOCTYPE html><html><head><title>Not allowed</title>
+    db = get_db()
+    # Check allowlist — if the table has any entries, email must be in it
+    allowed_count = db.execute('SELECT COUNT(*) FROM allowed_emails').fetchone()[0]
+    if allowed_count > 0:
+        match = db.execute('SELECT 1 FROM allowed_emails WHERE email=?',
+                           (email.lower(),)).fetchone()
+        if not match:
+            db.close()
+            return '''<!DOCTYPE html><html><head><title>Not allowed</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>body{background:#0a0c10;color:#94a3b8;font-family:system-ui;
 display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
 .card{background:#12161e;border:1px solid #1e2530;border-radius:20px;padding:40px 32px;max-width:320px}
-h1{color:#f87171;font-size:20px;margin-bottom:12px}p{font-size:14px;margin-bottom:20px}
+h1{color:#f87171;font-size:20px;margin-bottom:12px}p{font-size:14px;line-height:1.5;margin-bottom:20px}
 a{color:#f59e0b;text-decoration:none}</style></head>
 <body><div class="card"><h1>Not allowed</h1>
-<p>This Google account isn't on the hearth allowlist.</p>
+<p>This Google account isn't on the hearth allowlist.<br>Ask the admin to add you.</p>
 <a href="/login.html">← back</a></div></body></html>''', 403
-
-    db = get_db()
     row = db.execute('SELECT id, role FROM accounts WHERE google_sub=?',
                      (google_sub,)).fetchone()
     if row:
@@ -487,6 +503,39 @@ def update_device(device_id):
 def revoke(device_id):
     db = get_db()
     db.execute('UPDATE devices SET revoked=1 WHERE id=?', (device_id,))
+    db.commit()
+    db.close()
+    return jsonify({'ok': True})
+
+@app.route('/api/allowed', methods=['GET'])
+@require_auth
+@require_admin
+def list_allowed():
+    db = get_db()
+    rows = db.execute('SELECT email, added_by, added_at FROM allowed_emails ORDER BY added_at').fetchall()
+    db.close()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/allowed', methods=['POST'])
+@require_auth
+@require_admin
+def add_allowed():
+    email = (request.json or {}).get('email', '').strip().lower()
+    if not email or '@' not in email:
+        return jsonify({'error': 'Invalid email'}), 400
+    db = get_db()
+    db.execute('INSERT OR IGNORE INTO allowed_emails (email, added_by, added_at) VALUES (?,?,?)',
+               (email, request.jwt.get('account_id'), int(time.time())))
+    db.commit()
+    db.close()
+    return jsonify({'ok': True, 'email': email})
+
+@app.route('/api/allowed/<path:email>', methods=['DELETE'])
+@require_auth
+@require_admin
+def remove_allowed(email):
+    db = get_db()
+    db.execute('DELETE FROM allowed_emails WHERE email=?', (email.lower(),))
     db.commit()
     db.close()
     return jsonify({'ok': True})
