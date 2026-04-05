@@ -29,6 +29,14 @@ GCAL_API_KEY         = os.environ.get('GCAL_API_KEY',         '')
 GCAL_CALENDAR_ID     = os.environ.get('GCAL_CALENDAR_ID',     '')
 PORT                 = int(os.environ.get('PORT',              '8765'))
 
+# Comma-separated list of allowed Google email addresses.
+# Empty = open to any Google account (not recommended).
+_ALLOWED_RAW = os.environ.get('HEARTH_ALLOWED_EMAILS', '')
+ALLOWED_EMAILS: set[str] = (
+    {e.strip().lower() for e in _ALLOWED_RAW.split(',') if e.strip()}
+    if _ALLOWED_RAW else set()
+)
+
 SESSION_DAYS    = 180
 INVITE_MINUTES  = 10
 
@@ -270,6 +278,18 @@ def google_callback():
     email      = claims.get('email', '')
     name       = claims.get('name', email)
     picture    = claims.get('picture', '')
+
+    if ALLOWED_EMAILS and email.lower() not in ALLOWED_EMAILS:
+        return '''<!DOCTYPE html><html><head><title>Not allowed</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{background:#0a0c10;color:#94a3b8;font-family:system-ui;
+display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+.card{background:#12161e;border:1px solid #1e2530;border-radius:20px;padding:40px 32px;max-width:320px}
+h1{color:#f87171;font-size:20px;margin-bottom:12px}p{font-size:14px;margin-bottom:20px}
+a{color:#f59e0b;text-decoration:none}</style></head>
+<body><div class="card"><h1>Not allowed</h1>
+<p>This Google account isn't on the hearth allowlist.</p>
+<a href="/login.html">← back</a></div></body></html>''', 403
 
     db = get_db()
     row = db.execute('SELECT id, role FROM accounts WHERE google_sub=?',
